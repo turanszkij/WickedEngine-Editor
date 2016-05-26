@@ -1,19 +1,19 @@
 #include "stdafx.h"
-#include "Game.h"
+#include "Editor.h"
 #include "wiInitializer.h"
 #include "wiRenderer.h"
 
 
-Game::Game()
+Editor::Editor()
 {
 }
 
 
-Game::~Game()
+Editor::~Editor()
 {
 }
 
-void Game::Initialize()
+void Editor::Initialize()
 {
 
 	MainComponent::Initialize();
@@ -42,5 +42,38 @@ void Game::Initialize()
 
 	wiFont::addFontStyle("basic");
 	wiInputManager::GetInstance()->addXInput(new wiXInput());
+
+	EditorComponent* editorComponent = new EditorComponent;
+	editorComponent->Initialize();
+
+	activateComponent(editorComponent);
 }
 
+
+
+
+void EditorComponent::Initialize()
+{
+	wiButton* button = new wiButton("BUTTON");
+	button->SetSize(XMFLOAT2(500, 200));
+	button->SetPos(XMFLOAT2(200, 200));
+	GetGUI().AddWidget(button);
+
+	DeferredRenderableComponent::Initialize();
+}
+void EditorComponent::Load()
+{
+	DeferredRenderableComponent::Load();
+
+	// ...
+}
+void EditorComponent::Start()
+{
+	DeferredRenderableComponent::Start();
+}
+void EditorComponent::Unload()
+{
+	// ...
+
+	DeferredRenderableComponent::Unload();
+}

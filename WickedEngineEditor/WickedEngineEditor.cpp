@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "WickedEngineEditor.h"
-#include "Game.h"
+#include "Editor.h"
 
 #define MAX_LOADSTRING 100
 
@@ -12,7 +12,7 @@ extern "C" {
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-Game game;
+Editor editor;
 
 
 enum Hotkeys
@@ -50,7 +50,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WICKEDENGINEGAME));
 
-	game.Initialize();
+	editor.Initialize();
 
 
 	MSG msg = { 0 };
@@ -62,7 +62,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 		else {
 
-			game.run();
+			editor.run();
 
 		}
 	}
@@ -122,9 +122,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	   file >> voidStr >> enabled;
 	   if (enabled != 0)
 	   {
-		   file >> voidStr >> x >> voidStr >> y >> voidStr >> w >> voidStr >> h >> voidStr >> game.fullscreen;
-		   game.screenW = w;
-		   game.screenH = h;
+		   file >> voidStr >> x >> voidStr >> y >> voidStr >> w >> voidStr >> h >> voidStr >> editor.fullscreen;
+		   editor.screenW = w;
+		   editor.screenH = h;
 	   }
    }
    file.close();
@@ -137,7 +137,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
-   if (!game.setWindow(hWnd, hInst))
+   if (!editor.setWindow(hWnd, hInst))
 	   return false;
 
 
