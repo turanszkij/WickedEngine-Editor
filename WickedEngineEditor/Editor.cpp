@@ -56,10 +56,17 @@ void Editor::Initialize()
 
 void EditorComponent::Initialize()
 {
+	float screenW = (float)wiRenderer::GetDevice()->GetScreenWidth();
+	float screenH = (float)wiRenderer::GetDevice()->GetScreenHeight();
+
+	wiWindow* window = new wiWindow(&GetGUI(),"window");
+	window->SetSize(XMFLOAT2(640, 480));
+	GetGUI().AddWidget(window);
+
 	wiLabel* label = new wiLabel("Label");
 	label->SetPos(XMFLOAT2(100, 20));
 	label->SetSize(XMFLOAT2(400, 20));
-	GetGUI().AddWidget(label);
+	window->AddWidget(label);
 
 	wiButton* button = new wiButton("BUTTON");
 	button->SetPos(XMFLOAT2(200, 200));
@@ -70,7 +77,7 @@ void EditorComponent::Initialize()
 		ss << "Button clicks: " << clicks;
 		label->SetText(ss.str());
 	});
-	GetGUI().AddWidget(button);
+	window->AddWidget(button);
 
 	wiCheckBox* checkBox = new wiCheckBox("CHECKBOX");
 	checkBox->SetPos(XMFLOAT2(200, 50));
@@ -81,12 +88,35 @@ void EditorComponent::Initialize()
 		ss << "Checkbox value: " << args.bValue;
 		label->SetText(ss.str());
 	});
-	GetGUI().AddWidget(checkBox);
+	window->AddWidget(checkBox);
 
-	wiSlider* slider = new wiSlider(1, 100, 10, 99);
+	wiSlider* slider = new wiSlider(-100, 100, 0, 10000);
 	slider->SetPos(XMFLOAT2(200, 80));
 	slider->SetText("Slider");
-	GetGUI().AddWidget(slider);
+	slider->OnSlide([window](wiEventArgs args) {
+		//
+	});
+	window->AddWidget(slider);
+
+
+	window->Scale(XMFLOAT3(1.3f, 0.8f, 1));
+	window->Translate(XMFLOAT3(20, 20, 0));
+
+
+	wiButton* buttonWnd1 = new wiButton("Wnd1");
+	buttonWnd1->SetPos(XMFLOAT2(0, screenH - 40));
+	buttonWnd1->SetSize(XMFLOAT2(100, 40));
+	buttonWnd1->OnClick([window](wiEventArgs args) {
+		window->SetVisible(!window->IsVisible());
+	});
+	GetGUI().AddWidget(buttonWnd1);
+
+	wiButton* dragger = new wiButton("Dragger");
+	dragger->SetPos(XMFLOAT2(500, 300));
+	dragger->OnDrag([=](wiEventArgs args) {
+		dragger->Translate(XMFLOAT3(args.deltaPos.x, args.deltaPos.y, 0));
+	});
+	GetGUI().AddWidget(dragger);
 
 	DeferredRenderableComponent::Initialize();
 }
