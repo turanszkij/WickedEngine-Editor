@@ -66,4 +66,7 @@
       <Filter>fonts</Filter>
     </Text>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="config.ini" />
+  </ItemGroup>
 </Project>
