@@ -1,0 +1,171 @@
+//MATERIAL-Bark01
+f 0.5
+d 1 1 1
+i 0.0
+t Foliage_Bark_01_Diffuse_01.png 0
+b MIX
+n Foliage_Bark_01_Normal_01.png
+s 1.0 1.0 1.0 0.5
+p 50
+e 0.0
+//MATERIAL-Bricks01
+f 0.5
+d 1 1 1
+i 0.0
+t Bricks_01_Diffuse.png 0
+b MIX
+s 1.0 1.0 1.0 0.0
+p 50
+e 0.0
+//MATERIAL-Clay01
+f 0.5
+d 1 1 1
+i 0.0
+t Clay_01_Diffuse.png 0
+b MIX
+s 1.0 1.0 1.0 0.0
+p 50
+e 0.0
+//MATERIAL-fire
+f 0.5
+d 1 0.2 0
+i 0.0
+t flame.png 1
+b ADD
+s 1.0 1.0 1.0 0.5
+p 50
+e 0.0
+//MATERIAL-flowerbbmat
+f 0.5
+d 1 1 1
+i 0.0
+t billboardredflowers.png 0
+b MIX
+s 1.0 1.0 1.0 0.0
+p 50
+e 0.0
+//MATERIAL-glass
+f 0.5
+d 1 1 1
+i 0.0
+n waterNor.jpg
+a 0.21061420440673828
+R 0.019999999552965164
+s 0.5333333015441895 0.5867658853530884 1.0 0.807692289352417
+p 50
+e 0.0
+//MATERIAL-grassbbMat
+f 0.5
+d 1 1 1
+i 0.0
+t grassbb.png 0
+b MIX
+s 1.0 1.0 1.0 0.5
+p 50
+e 0.0
+//MATERIAL-Leaves01
+f 0.5
+d 1 1 1
+i 0.0
+t Foliage_Leaves_01_DiffuseMask_01.png 0
+b MIX
+s 1.0 1.0 1.0 0.5
+p 25
+e 0.0
+//MATERIAL-Material
+f 0.5
+d 1 1 1
+i 0.0
+t grass-texture-2.jpg 0
+b MIX
+s 1.0 1.0 1.0 0.0
+p 50
+e 0.0
+//MATERIAL-Material.001
+f 0.5
+d 1.0 1.0 1.0
+i 0.0
+a 1.0
+R 0.0
+s 0.2578425705432892 0.6351447105407715 0.24628938734531403 0.0
+p 15
+e 0.0
+//MATERIAL-Material.002
+f 0.5
+d 0.004594063386321068 0.0020151478238403797 0.2810308337211609
+i 0.0
+n waterNor.jpg
+a 0.6692307591438293
+R 0.03999999165534973
+s 1.0 0.6056352257728577 0.3434094786643982 1.0
+p 92
+e 0.6000000238418579
+m 0.001 0.0005 0
+w
+//MATERIAL-Material.003
+f 0.5
+d 1 1 1
+i 0.0
+t windmill_001_lopatky_COL.jpg 0
+b MIX
+n windmill_001_lopatky_NOR.jpg
+s 1.0 1.0 1.0 0.0
+p 1
+e 0.0
+//MATERIAL-Material.004
+f 0.5
+d 1 1 1
+i 0.0
+a 1.0
+R 0.0
+s 0.2578425705432892 0.6351447105407715 0.24628938734531403 0.0
+p 15
+e 0.0
+//MATERIAL-Planks01
+f 0.5
+d 1 1 1
+i 0.0
+t WoodenPlanks_01_Diffuse_01.png 0
+b MIX
+s 1.0 1.0 1.0 0.0
+p 50
+e 0.0
+//MATERIAL-Rock02
+f 0.5
+d 1 1 1
+i 0.0
+n Rocks02_NormalAtlas_01.png
+t Rocks02_DiffuseAtlas_01.png 0
+b MIX
+s 1.0 1.0 1.0 1.0
+p 20
+e 0.0
+//MATERIAL-Roof01
+f 0.5
+d 1 1 1
+i 0.0
+t RoofTiles_01_Diffuse.png 0
+b MIX
+s 1.0 1.0 1.0 0.0
+p 50
+e 0.0
+//MATERIAL-windmill
+f 0.5
+d 1 1 1
+i 0.0
+t windmill_001_base_COL.jpg 0
+b MIX
+n windmill_001_base_NOR.jpg
+S windmill_001_base_SPEC.jpg
+s 1.0 1.0 1.0 0.0
+p 1
+e 0.0
+//MATERIAL-Wood01
+f 0.5
+d 1 1 1
+i 0.0
+t WoodenPlain_01_Diffuse.png 0
+b MIX
+s 1.0 1.0 1.0 0.0
+p 50
+e 0.0

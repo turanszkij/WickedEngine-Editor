@@ -68,5 +68,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="config.ini" />
+    <None Include="startup.lua" />
   </ItemGroup>
 </Project>

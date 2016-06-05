@@ -1,0 +1,12 @@
+//MATERIAL-defaultMat
+f 0.5
+d 0.800000011920929 0.7625897526741028 0.708241879940033
+i 0.019999999552965164
+n Infinite-Level_02_Tangent_SmoothUV.jpg
+t Map-COL.jpg 0
+b MIX
+S Map-COL_spec.png
+u
+s 1.0 1.0 1.0 0.5498924851417542
+p 1
+e 0.0
