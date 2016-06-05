@@ -130,6 +130,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <StructMemberAlignment>16Bytes</StructMemberAlignment>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -148,6 +149,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../../WickedEngine/WickedEngine/</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -159,13 +161,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Editor.h" />
+    <ClInclude Include="MaterialWindow.h" />
+    <ClInclude Include="MeshWindow.h" />
+    <ClInclude Include="ObjectWindow.h" />
+    <ClInclude Include="PostprocessWindow.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="WickedEngineEditor.h" />
+    <ClInclude Include="WorldWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Editor.cpp" />
+    <ClCompile Include="MaterialWindow.cpp" />
+    <ClCompile Include="MeshWindow.cpp" />
+    <ClCompile Include="ObjectWindow.cpp" />
+    <ClCompile Include="PostprocessWindow.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -173,6 +184,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="WickedEngineEditor.cpp" />
+    <ClCompile Include="WorldWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="fonts\basic.dds" />

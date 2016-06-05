@@ -2,6 +2,11 @@
 #include "Editor.h"
 #include "wiInitializer.h"
 #include "wiRenderer.h"
+#include "MaterialWindow.h"
+#include "PostprocessWindow.h"
+#include "WorldWindow.h"
+#include "ObjectWindow.h"
+#include "MeshWindow.h"
 
 using namespace wiGraphicsTypes;
 
@@ -54,23 +59,12 @@ void Editor::Initialize()
 	this->infoDisplay.fpsinfo = true;
 
 	wiRenderer::getCamera()->Translate(XMFLOAT3(0, 1, -10));
+
 }
 
 
 
-Material* material = nullptr;
 
-wiWindow* materialWindow = nullptr;
-wiLabel* materialLabel = nullptr;
-wiCheckBox* waterCheckBox = nullptr; 
-wiSlider* normalMapSlider = nullptr;
-wiSlider* roughnessSlider = nullptr;
-wiSlider* reflectanceSlider = nullptr;
-wiSlider* metalnessSlider = nullptr;
-wiSlider* alphaSlider = nullptr;
-wiSlider* refractionIndexSlider = nullptr;
-wiSlider* emissiveSlider = nullptr;
-wiSlider* sssSlider = nullptr;
 
 void EditorComponent::Initialize()
 {
@@ -85,124 +79,78 @@ void EditorComponent::Initialize()
 	setDepthOfFieldEnabled(false);
 	setLightShaftsEnabled(false);
 
+	materialWnd = new MaterialWindow(&GetGUI());
+	postprocessWnd = new PostprocessWindow(this);
+	worldWnd = new WorldWindow;
+	objectWnd = new ObjectWindow(&GetGUI());
+	meshWnd = new MeshWindow;
+
 	float screenW = (float)wiRenderer::GetDevice()->GetScreenWidth();
 	float screenH = (float)wiRenderer::GetDevice()->GetScreenHeight();
 
-	materialWindow = new wiWindow(&GetGUI(),"MaterialWindow");
-	materialWindow->SetSize(XMFLOAT2(600, 400));
-	materialWindow->SetEnabled(false);
-	GetGUI().AddWidget(materialWindow);
-
-	materialLabel = new wiLabel("Material: ");
-	materialLabel->SetPos(XMFLOAT2(10, 30));
-	materialLabel->SetSize(XMFLOAT2(300, 20));
-	materialLabel->SetText("");
-	materialWindow->AddWidget(materialLabel);
-
-	waterCheckBox = new wiCheckBox("Water: ");
-	waterCheckBox->SetPos(XMFLOAT2(470, 30));
-	waterCheckBox->OnClick([=](wiEventArgs args) {
-		material->water = args.bValue;
+	wiButton* worldWnd_Toggle = new wiButton("World");
+	worldWnd_Toggle->SetPos(XMFLOAT2(0, screenH - 40));
+	worldWnd_Toggle->SetSize(XMFLOAT2(100, 40));
+	worldWnd_Toggle->SetFontScaling(0.4f);
+	worldWnd_Toggle->OnClick([=](wiEventArgs args) {
+		wiHelper::messageBox("TODO");
 	});
-	materialWindow->AddWidget(waterCheckBox);
+	GetGUI().AddWidget(worldWnd_Toggle);
 
-	normalMapSlider = new wiSlider(0, 4, 1, 4000, "Normalmap: ");
-	normalMapSlider->SetSize(XMFLOAT2(100, 30));
-	normalMapSlider->SetPos(XMFLOAT2(400, 60));
-	normalMapSlider->OnSlide([=](wiEventArgs args) {
-		material->normalMapStrength = args.fValue;
+	wiButton* objectWnd_Toggle = new wiButton("Object");
+	objectWnd_Toggle->SetPos(XMFLOAT2(105, screenH - 40));
+	objectWnd_Toggle->SetSize(XMFLOAT2(100, 40));
+	objectWnd_Toggle->SetFontScaling(0.4f);
+	objectWnd_Toggle->OnClick([=](wiEventArgs args) {
+		objectWnd->objectWindow->SetVisible(!objectWnd->objectWindow->IsVisible());
 	});
-	materialWindow->AddWidget(normalMapSlider);
+	GetGUI().AddWidget(objectWnd_Toggle);
 
-	roughnessSlider = new wiSlider(0, 1, 0.5, 1000, "Roughness: ");
-	roughnessSlider->SetSize(XMFLOAT2(100, 30));
-	roughnessSlider->SetPos(XMFLOAT2(400, 100));
-	roughnessSlider->OnSlide([=](wiEventArgs args) {
-		material->roughness = args.fValue;
+	wiButton* meshWnd_Toggle = new wiButton("Mesh");
+	meshWnd_Toggle->SetPos(XMFLOAT2(210, screenH - 40));
+	meshWnd_Toggle->SetSize(XMFLOAT2(100, 40));
+	meshWnd_Toggle->SetFontScaling(0.4f);
+	meshWnd_Toggle->OnClick([=](wiEventArgs args) {
+		wiHelper::messageBox("TODO");
 	});
-	materialWindow->AddWidget(roughnessSlider);
+	GetGUI().AddWidget(meshWnd_Toggle);
 
-	reflectanceSlider = new wiSlider(0, 1, 0.5, 1000, "Reflectance: ");
-	reflectanceSlider->SetSize(XMFLOAT2(100, 30));
-	reflectanceSlider->SetPos(XMFLOAT2(400, 140));
-	reflectanceSlider->OnSlide([=](wiEventArgs args) {
-		material->reflectance = args.fValue;
-	});
-	materialWindow->AddWidget(reflectanceSlider);
-
-	metalnessSlider = new wiSlider(0, 1, 0.0, 1000, "Metalness: ");
-	metalnessSlider->SetSize(XMFLOAT2(100, 30));
-	metalnessSlider->SetPos(XMFLOAT2(400, 180));
-	metalnessSlider->OnSlide([=](wiEventArgs args) {
-		material->metalness = args.fValue;
-	});
-	materialWindow->AddWidget(metalnessSlider);
-
-	alphaSlider = new wiSlider(0, 1, 1.0, 1000, "Alpha: ");
-	alphaSlider->SetSize(XMFLOAT2(100, 30));
-	alphaSlider->SetPos(XMFLOAT2(400, 220));
-	alphaSlider->OnSlide([=](wiEventArgs args) {
-		material->alpha = args.fValue;
-	});
-	materialWindow->AddWidget(alphaSlider);
-
-	refractionIndexSlider = new wiSlider(0, 1.0, 0.02, 1000, "Refraction Index: ");
-	refractionIndexSlider->SetSize(XMFLOAT2(100, 30));
-	refractionIndexSlider->SetPos(XMFLOAT2(400, 260));
-	refractionIndexSlider->OnSlide([=](wiEventArgs args) {
-		material->refractionIndex = args.fValue;
-	});
-	materialWindow->AddWidget(refractionIndexSlider);
-
-	emissiveSlider = new wiSlider(0, 1, 0.0, 1000, "Emissive: ");
-	emissiveSlider->SetSize(XMFLOAT2(100, 30));
-	emissiveSlider->SetPos(XMFLOAT2(400, 300));
-	emissiveSlider->OnSlide([=](wiEventArgs args) {
-		material->emissive = args.fValue;
-	});
-	materialWindow->AddWidget(emissiveSlider);
-
-	sssSlider = new wiSlider(0, 1, 0.0, 1000, "Subsurface Scattering: ");
-	sssSlider->SetSize(XMFLOAT2(100, 30));
-	sssSlider->SetPos(XMFLOAT2(400, 340));
-	sssSlider->OnSlide([=](wiEventArgs args) {
-		material->subsurfaceScattering = args.fValue;
-	});
-	materialWindow->AddWidget(sssSlider);
-
-
-
-
-	wiButton* materialWnd_Toggle = new wiButton("MaterialWnd");
-	materialWnd_Toggle->SetPos(XMFLOAT2(0, screenH - 40));
+	wiButton* materialWnd_Toggle = new wiButton("Material");
+	materialWnd_Toggle->SetPos(XMFLOAT2(315, screenH - 40));
 	materialWnd_Toggle->SetSize(XMFLOAT2(100, 40));
-	materialWnd_Toggle->SetFontScaling(0.20f);
+	materialWnd_Toggle->SetFontScaling(0.3f);
 	materialWnd_Toggle->OnClick([=](wiEventArgs args) {
-		materialWindow->SetVisible(!materialWindow->IsVisible());
+		materialWnd->materialWindow->SetVisible(!materialWnd->materialWindow->IsVisible());
 	});
 	GetGUI().AddWidget(materialWnd_Toggle);
 
-	materialWindow->Translate(XMFLOAT3(30, 30, 0));
+	wiButton* postprocessWnd_Toggle = new wiButton("PostProcess");
+	postprocessWnd_Toggle->SetPos(XMFLOAT2(420, screenH - 40));
+	postprocessWnd_Toggle->SetSize(XMFLOAT2(100, 40));
+	postprocessWnd_Toggle->SetFontScaling(0.22f);
+	postprocessWnd_Toggle->OnClick([=](wiEventArgs args) {
+		postprocessWnd->ppWindow->SetVisible(!postprocessWnd->ppWindow->IsVisible());
+	});
+	GetGUI().AddWidget(postprocessWnd_Toggle);
 
 
 
-	wiButton* modelButton = new wiButton("ModelButton");
-	modelButton->SetText("Load Model");
-	modelButton->SetPos(XMFLOAT2(110, screenH - 40));
+	wiButton* modelButton = new wiButton("LoadModel");
+	modelButton->SetPos(XMFLOAT2(screenW-205, 0));
 	modelButton->SetSize(XMFLOAT2(100, 40));
 	modelButton->SetFontScaling(0.25f);
 	modelButton->OnClick([=](wiEventArgs args) {
 		wiRenderer::CleanUpStaticTemp();
-		//wiRenderer::LoadModel("CONTENT/models/instanceBenchmark2/", "instanceBenchmark2");
-		wiRenderer::LoadModel("CONTENT/models/cube/", "cube");
+		wiRenderer::LoadModel("CONTENT/models/instanceBenchmark2/", "instanceBenchmark2");
+		//wiRenderer::LoadModel("CONTENT/models/cube/", "cube");
 	});
 	GetGUI().AddWidget(modelButton);
 
 
-	wiButton* skyButton = new wiButton("Sky");
-	skyButton->SetText("Sky");
-	skyButton->SetPos(XMFLOAT2(220, screenH - 40));
+	wiButton* skyButton = new wiButton("LoadSky");
+	skyButton->SetPos(XMFLOAT2(screenW-100, 0));
 	skyButton->SetSize(XMFLOAT2(100, 40));
+	skyButton->SetFontScaling(0.25f);
 	skyButton->OnClick([=](wiEventArgs args) {
 		static bool toggle = true;
 		if (toggle)
@@ -263,31 +211,21 @@ void EditorComponent::Update()
 			wiRenderer::Picked pick = wiRenderer::Pick((long)currentMouse.x, (long)currentMouse.y, 
 				PICK_OPAQUE | PICK_TRANSPARENT | PICK_WATER);
 
+			objectWnd->SetObject(pick.object);
+
 			if (pick.object != nullptr)
 			{
 				if (pick.subsetIndex < (int)pick.object->mesh->subsets.size())
 				{
-					material = pick.object->mesh->subsets[pick.subsetIndex].material;
+					Material* material = pick.object->mesh->subsets[pick.subsetIndex].material;
 
-					materialLabel->SetText("Material: " + material->name);
-					waterCheckBox->SetCheck(material->water);
-					normalMapSlider->SetValue(material->normalMapStrength);
-					roughnessSlider->SetValue(material->roughness);
-					reflectanceSlider->SetValue(material->reflectance);
-					metalnessSlider->SetValue(material->metalness);
-					alphaSlider->SetValue(material->alpha);
-					refractionIndexSlider->SetValue(material->refractionIndex);
-					emissiveSlider->SetValue(material->emissive);
-					sssSlider->SetValue(material->subsurfaceScattering);
-					materialWindow->SetEnabled(true);
+					materialWnd->SelectMaterial(material);
 				}
 
 			}
 			else
 			{
-				material = nullptr;
-				materialLabel->SetText("Material: ");
-				materialWindow->SetEnabled(false);
+				materialWnd->SelectMaterial(nullptr);
 			}
 		}
 
@@ -298,6 +236,11 @@ void EditorComponent::Update()
 void EditorComponent::Unload()
 {
 	// ...
+	SAFE_DELETE(materialWnd);
+	SAFE_DELETE(postprocessWnd);
+	SAFE_DELETE(worldWnd);
+	SAFE_DELETE(objectWnd);
+	SAFE_DELETE(meshWnd);
 
 	__super::Unload();
 }
