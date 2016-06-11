@@ -243,4 +243,4 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
-/WickedEngineEditor/CONTENT/scene
+/WickedEngineEditor/CONTENT

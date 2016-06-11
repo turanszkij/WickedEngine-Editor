@@ -32,7 +32,7 @@ runProcess(function()
 	while true do
 		
 		if(input.Press(VK_F11)) then
-			ReloadShaders("../../WickedEngine/WickedEngine/shaders/")
+			ReloadShaders("D:\\PROJECTS\\DirectX\\WickedEngine\\WickedEngine\\shaders\\")
 		end
 		
 		if(input.Press(VK_F10)) then

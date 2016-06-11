@@ -8,6 +8,9 @@
 #include "ObjectWindow.h"
 #include "MeshWindow.h"
 
+#include <Commdlg.h> // openfile
+#include <WinBase.h>
+
 using namespace wiGraphicsTypes;
 
 
@@ -45,7 +48,7 @@ void Editor::Initialize()
 	wiRenderer::SetDirectionalLightShadowProps(1024, 2);
 	wiRenderer::SetPointLightShadowProps(3, 512);
 	wiRenderer::SetSpotLightShadowProps(3, 512);
-	//wiRenderer::physicsEngine = new wiBULLET();
+	wiRenderer::physicsEngine = new wiBULLET();
 
 
 	wiFont::addFontStyle("basic");
@@ -62,7 +65,13 @@ void Editor::Initialize()
 
 }
 
-
+void SplitFilename(const string& path, string& folder, string& file)
+{
+	size_t found;
+	found = path.find_last_of("/\\");
+	folder = path.substr(0, found + 1);
+	file = path.substr(found + 1);
+}
 
 
 
@@ -136,34 +145,99 @@ void EditorComponent::Initialize()
 
 
 	wiButton* modelButton = new wiButton("LoadModel");
-	modelButton->SetPos(XMFLOAT2(screenW-205, 0));
+	modelButton->SetPos(XMFLOAT2(screenW-310, 0));
 	modelButton->SetSize(XMFLOAT2(100, 40));
 	modelButton->SetFontScaling(0.25f);
 	modelButton->OnClick([=](wiEventArgs args) {
-		wiRenderer::CleanUpStaticTemp();
-		wiRenderer::LoadModel("CONTENT/models/instanceBenchmark2/", "instanceBenchmark2");
+		//wiRenderer::CleanUpStaticTemp();
 		//wiRenderer::LoadModel("CONTENT/models/cube/", "cube");
+
+		//wiRenderer::LoadModel("CONTENT/models/Havoc/1/", "Havoc");
+		//wiRenderer::LoadModel("CONTENT/models/instanceBenchmark2/", "instanceBenchmark2");
+
+		thread([] {
+			char szFile[260];
+
+			OPENFILENAMEA ofn;
+			ZeroMemory(&ofn, sizeof(ofn));
+			ofn.lStructSize = sizeof(ofn);
+			ofn.hwndOwner = nullptr;
+			ofn.lpstrFile = szFile;
+			// Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
+			// use the contents of szFile to initialize itself.
+			ofn.lpstrFile[0] = '\0';
+			ofn.nMaxFile = sizeof(szFile);
+			ofn.lpstrFilter = "Wicked Model Format\0*.wio\0";
+			ofn.nFilterIndex = 1;
+			ofn.lpstrFileTitle = NULL;
+			ofn.nMaxFileTitle = 0;
+			ofn.lpstrInitialDir = NULL;
+			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+			if (GetOpenFileNameA(&ofn) == TRUE) {
+				string fileName = ofn.lpstrFile;
+				string dir, file;
+				SplitFilename(fileName, dir, file);
+				file = file.substr(0, file.length() - 4);
+
+				wiRenderer::LoadModel(dir, file);
+			}
+		}).detach();
 	});
 	GetGUI().AddWidget(modelButton);
 
 
 	wiButton* skyButton = new wiButton("LoadSky");
-	skyButton->SetPos(XMFLOAT2(screenW-100, 0));
+	skyButton->SetPos(XMFLOAT2(screenW-205, 0));
 	skyButton->SetSize(XMFLOAT2(100, 40));
 	skyButton->SetFontScaling(0.25f);
 	skyButton->OnClick([=](wiEventArgs args) {
-		static bool toggle = true;
-		if (toggle)
+		//wiRenderer::SetEnviromentMap((Texture2D*)Content.add("CONTENT/env.dds"));
+
+		auto x = wiRenderer::GetEnviromentMap();
+
+		if (x == nullptr)
 		{
-			wiRenderer::SetEnviromentMap((Texture2D*)Content.add("CONTENT/env.dds"));
+			thread([&] {
+				char szFile[260];
+
+				OPENFILENAMEA ofn;
+				ZeroMemory(&ofn, sizeof(ofn));
+				ofn.lStructSize = sizeof(ofn);
+				ofn.hwndOwner = nullptr;
+				ofn.lpstrFile = szFile;
+				// Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
+				// use the contents of szFile to initialize itself.
+				ofn.lpstrFile[0] = '\0';
+				ofn.nMaxFile = sizeof(szFile);
+				ofn.lpstrFilter = "Cubemap texture\0*.dds\0";
+				ofn.nFilterIndex = 1;
+				ofn.lpstrFileTitle = NULL;
+				ofn.nMaxFileTitle = 0;
+				ofn.lpstrInitialDir = NULL;
+				ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+				if (GetOpenFileNameA(&ofn) == TRUE) {
+					string fileName = ofn.lpstrFile;
+					wiRenderer::SetEnviromentMap((Texture2D*)Content.add(fileName));
+				}
+			}).detach();
 		}
 		else
 		{
 			wiRenderer::SetEnviromentMap(nullptr);
 		}
-		toggle = !toggle;
+
 	});
 	GetGUI().AddWidget(skyButton);
+
+
+	wiButton* clearButton = new wiButton("ClearWorld");
+	clearButton->SetPos(XMFLOAT2(screenW - 100, 0));
+	clearButton->SetSize(XMFLOAT2(100, 40));
+	clearButton->SetFontScaling(0.25f);
+	clearButton->OnClick([](wiEventArgs args) {
+		wiRenderer::CleanUpStaticTemp();
+	});
+	GetGUI().AddWidget(clearButton);
 
 
 	__super::Initialize();
