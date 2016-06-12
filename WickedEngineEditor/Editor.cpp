@@ -92,6 +92,29 @@ void EditorLoadingScreen::Compose()
 		WIFALIGN_MID, WIFALIGN_MID)).Draw();
 }
 
+wiTranslator* translator = nullptr;
+bool translator_active = false;
+Transform* translatedEntity = nullptr;
+Transform* translatedEntity_Parent = nullptr;
+void BeginTranslate(Transform* entity)
+{
+	translatedEntity = entity;
+	translator_active = true;
+	translator->Clear();
+	translator->Translate(translatedEntity->translation);
+	translatedEntity_Parent = translatedEntity->parent;
+	translatedEntity->detach();
+	translatedEntity->attachTo(translator);
+}
+void EndTranslate()
+{
+	translator_active = false;
+	translator->detach();
+	if (translatedEntity != nullptr)
+	{
+		translatedEntity->attachTo(translatedEntity_Parent);
+	}
+}
 
 void EditorComponent::Initialize()
 {
@@ -119,6 +142,8 @@ void EditorComponent::Load()
 {
 	__super::Load();
 
+
+	translator = new wiTranslator;
 
 	materialWnd = new MaterialWindow(&GetGUI());
 	postprocessWnd = new PostprocessWindow(this);
@@ -185,7 +210,16 @@ void EditorComponent::Load()
 	GetGUI().AddWidget(cameraWnd_Toggle);
 
 
+	////////////////////////////////////////////////////////////////////////////////////
 
+
+
+	wiCheckBox* translatorCheckBox = new wiCheckBox("Translator: ");
+	translatorCheckBox->SetPos(XMFLOAT2(screenW - 335, 0));
+	translatorCheckBox->OnClick([=](wiEventArgs args) {
+		translator->enabled = args.bValue;
+	});
+	GetGUI().AddWidget(translatorCheckBox);
 
 
 
@@ -330,6 +364,7 @@ void EditorComponent::Load()
 	clearButton->SetFontScaling(0.25f);
 	clearButton->OnClick([](wiEventArgs args) {
 		wiRenderer::CleanUpStaticTemp();
+		EndTranslate();
 	});
 	GetGUI().AddWidget(clearButton);
 
@@ -384,17 +419,28 @@ void EditorComponent::Update()
 					materialWnd->SetMaterial(material);
 				}
 
+				EndTranslate();
+				BeginTranslate(pick.object);
 			}
 			else
 			{
 				meshWnd->SetMesh(nullptr);
 				materialWnd->SetMaterial(nullptr);
+
+				EndTranslate();
 			}
 		}
 
 	}
 
+	translator->Update();
+
 	__super::Update();
+
+	if (translator_active)
+	{
+		wiRenderer::AddRenderableTranslator(translator);
+	}
 }
 void EditorComponent::Unload()
 {
@@ -405,6 +451,8 @@ void EditorComponent::Unload()
 	SAFE_DELETE(objectWnd);
 	SAFE_DELETE(meshWnd);
 	SAFE_DELETE(cameraWnd);
+
+	SAFE_DELETE(translator);
 
 	__super::Unload();
 }
