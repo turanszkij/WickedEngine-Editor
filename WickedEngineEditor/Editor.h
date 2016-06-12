@@ -6,16 +6,15 @@ class PostprocessWindow;
 class WorldWindow;
 class ObjectWindow;
 class MeshWindow;
+class CameraWindow;
 
-class Editor : public MainComponent
+class EditorLoadingScreen : public LoadingScreenComponent
 {
 public:
-	Editor();
-	~Editor();
-
-	void Initialize();
+	void Compose() override;
 };
 
+class Editor;
 class EditorComponent : public DeferredRenderableComponent
 {
 public:
@@ -24,11 +23,27 @@ public:
 	WorldWindow*			worldWnd;
 	ObjectWindow*			objectWnd;
 	MeshWindow*				meshWnd;
+	CameraWindow*			cameraWnd;
+
+	Editor*					main;
+	EditorLoadingScreen*	loader;
 
 	void Initialize() override;
 	void Load() override;
 	void Start() override;
 	void Update() override;
 	void Unload() override;
+};
+
+class Editor : public MainComponent
+{
+public:
+	Editor();
+	~Editor();
+
+	EditorComponent*		renderComponent;
+	EditorLoadingScreen*	loader;
+
+	void Initialize();
 };
 

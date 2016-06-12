@@ -7,6 +7,7 @@
 #include "WorldWindow.h"
 #include "ObjectWindow.h"
 #include "MeshWindow.h"
+#include "CameraWindow.h"
 
 #include <Commdlg.h> // openfile
 #include <WinBase.h>
@@ -16,11 +17,15 @@ using namespace wiGraphicsTypes;
 
 Editor::Editor()
 {
+	SAFE_INIT(renderComponent);
+	SAFE_INIT(loader);
 }
 
 
 Editor::~Editor()
 {
+	//SAFE_DELETE(renderComponent);
+	SAFE_DELETE(loader);
 }
 
 void Editor::Initialize()
@@ -54,10 +59,17 @@ void Editor::Initialize()
 	wiFont::addFontStyle("basic");
 	wiInputManager::GetInstance()->addXInput(new wiXInput());
 
-	EditorComponent* editorComponent = new EditorComponent;
-	editorComponent->Initialize();
+	renderComponent = new EditorComponent;
+	renderComponent->Initialize();
+	loader = new EditorLoadingScreen;
+	loader->Initialize();
 
-	activateComponent(editorComponent);
+	renderComponent->loader = loader;
+	renderComponent->main = this;
+
+	loader->addLoadingComponent(renderComponent, this);
+
+	activateComponent(loader);
 
 	this->infoDisplay.fpsinfo = true;
 
@@ -74,6 +86,12 @@ void SplitFilename(const string& path, string& folder, string& file)
 }
 
 
+void EditorLoadingScreen::Compose()
+{
+	wiFont("Loading...", wiFontProps(wiRenderer::GetDevice()->GetScreenWidth() * 0.5f, wiRenderer::GetDevice()->GetScreenHeight() * 0.5f, 22,
+		WIFALIGN_MID, WIFALIGN_MID)).Draw();
+}
+
 
 void EditorComponent::Initialize()
 {
@@ -88,11 +106,26 @@ void EditorComponent::Initialize()
 	setDepthOfFieldEnabled(false);
 	setLightShaftsEnabled(false);
 
+	SAFE_INIT(materialWnd);
+	SAFE_INIT(postprocessWnd);
+	SAFE_INIT(worldWnd);
+	SAFE_INIT(objectWnd);
+	SAFE_INIT(meshWnd);
+	SAFE_INIT(cameraWnd);
+
+	__super::Initialize();
+}
+void EditorComponent::Load()
+{
+	__super::Load();
+
+
 	materialWnd = new MaterialWindow(&GetGUI());
 	postprocessWnd = new PostprocessWindow(this);
 	worldWnd = new WorldWindow;
 	objectWnd = new ObjectWindow(&GetGUI());
 	meshWnd = new MeshWindow;
+	cameraWnd = new CameraWindow(&GetGUI());
 
 	float screenW = (float)wiRenderer::GetDevice()->GetScreenWidth();
 	float screenH = (float)wiRenderer::GetDevice()->GetScreenHeight();
@@ -142,10 +175,22 @@ void EditorComponent::Initialize()
 	});
 	GetGUI().AddWidget(postprocessWnd_Toggle);
 
+	wiButton* cameraWnd_Toggle = new wiButton("Camera");
+	cameraWnd_Toggle->SetPos(XMFLOAT2(525, screenH - 40));
+	cameraWnd_Toggle->SetSize(XMFLOAT2(100, 40));
+	cameraWnd_Toggle->SetFontScaling(0.3f);
+	cameraWnd_Toggle->OnClick([=](wiEventArgs args) {
+		cameraWnd->cameraWindow->SetVisible(!cameraWnd->cameraWindow->IsVisible());
+	});
+	GetGUI().AddWidget(cameraWnd_Toggle);
+
+
+
+
 
 
 	wiButton* modelButton = new wiButton("LoadModel");
-	modelButton->SetPos(XMFLOAT2(screenW-310, 0));
+	modelButton->SetPos(XMFLOAT2(screenW - 310, 0));
 	modelButton->SetSize(XMFLOAT2(100, 40));
 	modelButton->SetFontScaling(0.25f);
 	modelButton->OnClick([=](wiEventArgs args) {
@@ -155,7 +200,7 @@ void EditorComponent::Initialize()
 		//wiRenderer::LoadModel("CONTENT/models/Havoc/1/", "Havoc");
 		//wiRenderer::LoadModel("CONTENT/models/instanceBenchmark2/", "instanceBenchmark2");
 
-		thread([] {
+		thread([&] {
 			char szFile[260];
 
 			OPENFILENAMEA ofn;
@@ -179,7 +224,13 @@ void EditorComponent::Initialize()
 				SplitFilename(fileName, dir, file);
 				file = file.substr(0, file.length() - 4);
 
-				wiRenderer::LoadModel(dir, file);
+				loader->addLoadingFunction([=] {
+					wiRenderer::LoadModel(dir, file);
+				});
+				loader->onFinished([=] {
+					main->activateComponent(this);
+				});
+				main->activateComponent(loader);
 			}
 		}).detach();
 	});
@@ -187,9 +238,9 @@ void EditorComponent::Initialize()
 
 
 	wiButton* skyButton = new wiButton("LoadSky");
-	skyButton->SetPos(XMFLOAT2(screenW-205, 0));
-	skyButton->SetSize(XMFLOAT2(100, 40));
-	skyButton->SetFontScaling(0.25f);
+	skyButton->SetPos(XMFLOAT2(screenW - 205, 0));
+	skyButton->SetSize(XMFLOAT2(100, 18));
+	skyButton->SetFontScaling(0.5f);
 	skyButton->OnClick([=](wiEventArgs args) {
 		//wiRenderer::SetEnviromentMap((Texture2D*)Content.add("CONTENT/env.dds"));
 
@@ -230,6 +281,48 @@ void EditorComponent::Initialize()
 	GetGUI().AddWidget(skyButton);
 
 
+	wiButton* colorGradingButton = new wiButton("ColorGrading");
+	colorGradingButton->SetPos(XMFLOAT2(screenW - 205, 22));
+	colorGradingButton->SetSize(XMFLOAT2(100, 18));
+	colorGradingButton->SetFontScaling(0.45f);
+	colorGradingButton->OnClick([=](wiEventArgs args) {
+		auto x = wiRenderer::GetColorGrading();
+
+		if (x == nullptr)
+		{
+			thread([&] {
+				char szFile[260];
+
+				OPENFILENAMEA ofn;
+				ZeroMemory(&ofn, sizeof(ofn));
+				ofn.lStructSize = sizeof(ofn);
+				ofn.hwndOwner = nullptr;
+				ofn.lpstrFile = szFile;
+				// Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
+				// use the contents of szFile to initialize itself.
+				ofn.lpstrFile[0] = '\0';
+				ofn.nMaxFile = sizeof(szFile);
+				ofn.lpstrFilter = "Color Grading texture\0*.dds\0";
+				ofn.nFilterIndex = 1;
+				ofn.lpstrFileTitle = NULL;
+				ofn.nMaxFileTitle = 0;
+				ofn.lpstrInitialDir = NULL;
+				ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+				if (GetOpenFileNameA(&ofn) == TRUE) {
+					string fileName = ofn.lpstrFile;
+					wiRenderer::SetColorGrading((Texture2D*)Content.add(fileName));
+				}
+			}).detach();
+		}
+		else
+		{
+			wiRenderer::SetColorGrading(nullptr);
+		}
+
+	});
+	GetGUI().AddWidget(colorGradingButton);
+
+
 	wiButton* clearButton = new wiButton("ClearWorld");
 	clearButton->SetPos(XMFLOAT2(screenW - 100, 0));
 	clearButton->SetSize(XMFLOAT2(100, 40));
@@ -238,13 +331,6 @@ void EditorComponent::Initialize()
 		wiRenderer::CleanUpStaticTemp();
 	});
 	GetGUI().AddWidget(clearButton);
-
-
-	__super::Initialize();
-}
-void EditorComponent::Load()
-{
-	__super::Load();
 
 	// ...
 }
@@ -315,6 +401,7 @@ void EditorComponent::Unload()
 	SAFE_DELETE(worldWnd);
 	SAFE_DELETE(objectWnd);
 	SAFE_DELETE(meshWnd);
+	SAFE_DELETE(cameraWnd);
 
 	__super::Unload();
 }

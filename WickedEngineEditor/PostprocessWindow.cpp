@@ -14,7 +14,7 @@ PostprocessWindow::PostprocessWindow(Renderable3DComponent* comp) : component(co
 	float screenH = (float)wiRenderer::GetDevice()->GetScreenHeight();
 
 	ppWindow = new wiWindow(GUI, "PostProcess Window");
-	ppWindow->SetSize(XMFLOAT2(300, 340));
+	ppWindow->SetSize(XMFLOAT2(360, 450));
 	GUI->AddWidget(ppWindow);
 
 	float x = 200;
@@ -84,8 +84,40 @@ PostprocessWindow::PostprocessWindow(Renderable3DComponent* comp) : component(co
 	});
 	ppWindow->AddWidget(depthOfFieldCheckBox);
 
+	bloomCheckBox = new wiCheckBox("Bloom: ");
+	bloomCheckBox->SetPos(XMFLOAT2(x, y += 35));
+	bloomCheckBox->SetCheck(component->getBloomEnabled());
+	bloomCheckBox->OnClick([&](wiEventArgs args) {
+		component->setBloomEnabled(args.bValue);
+	});
+	ppWindow->AddWidget(bloomCheckBox);
 
-	ppWindow->Translate(XMFLOAT3(screenW - 320, 50, 0));
+	fxaaCheckBox = new wiCheckBox("FXAA: ");
+	fxaaCheckBox->SetPos(XMFLOAT2(x, y += 35));
+	fxaaCheckBox->SetCheck(component->getFXAAEnabled());
+	fxaaCheckBox->OnClick([&](wiEventArgs args) {
+		component->setFXAAEnabled(args.bValue);
+	});
+	ppWindow->AddWidget(fxaaCheckBox);
+
+	colorGradingCheckBox = new wiCheckBox("Color Grading: ");
+	colorGradingCheckBox->SetPos(XMFLOAT2(x, y += 35));
+	colorGradingCheckBox->SetCheck(component->getColorGradingEnabled());
+	colorGradingCheckBox->OnClick([&](wiEventArgs args) {
+		component->setColorGradingEnabled(args.bValue);
+	});
+	ppWindow->AddWidget(colorGradingCheckBox);
+
+	stereogramCheckBox = new wiCheckBox("Stereogram: ");
+	stereogramCheckBox->SetPos(XMFLOAT2(x, y += 35));
+	stereogramCheckBox->SetCheck(component->getStereogramEnabled());
+	stereogramCheckBox->OnClick([&](wiEventArgs args) {
+		component->setStereogramEnabled(args.bValue);
+	});
+	ppWindow->AddWidget(stereogramCheckBox);
+
+
+	ppWindow->Translate(XMFLOAT3(screenW - 380, 50, 0));
 	ppWindow->SetVisible(false);
 
 }
@@ -100,4 +132,10 @@ PostprocessWindow::~PostprocessWindow()
 	SAFE_DELETE(ssrCheckBox);
 	SAFE_DELETE(sssCheckBox);
 	SAFE_DELETE(eyeAdaptionCheckBox);
+	SAFE_DELETE(motionBlurCheckBox);
+	SAFE_DELETE(depthOfFieldCheckBox);
+	SAFE_DELETE(bloomCheckBox);
+	SAFE_DELETE(fxaaCheckBox);
+	SAFE_DELETE(colorGradingCheckBox);
+	SAFE_DELETE(stereogramCheckBox);
 }

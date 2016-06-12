@@ -26,6 +26,10 @@ public:
 	wiCheckBox* eyeAdaptionCheckBox;
 	wiCheckBox* motionBlurCheckBox;
 	wiCheckBox* depthOfFieldCheckBox;
+	wiCheckBox* bloomCheckBox;
+	wiCheckBox* fxaaCheckBox;
+	wiCheckBox* stereogramCheckBox;
+	wiCheckBox* colorGradingCheckBox;
 
 
 };

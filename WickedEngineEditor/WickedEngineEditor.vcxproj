@@ -160,6 +160,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CameraWindow.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="MaterialWindow.h" />
     <ClInclude Include="MeshWindow.h" />
@@ -172,6 +173,7 @@
     <ClInclude Include="WorldWindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CameraWindow.cpp" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="MaterialWindow.cpp" />
     <ClCompile Include="MeshWindow.cpp" />
