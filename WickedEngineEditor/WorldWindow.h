@@ -1,8 +1,25 @@
 #pragma once
+
+struct Material;
+class wiGUI;
+class wiWindow;
+class wiLabel;
+class wiCheckBox;
+class wiSlider;
+
 class WorldWindow
 {
 public:
-	WorldWindow();
+	WorldWindow(wiGUI* gui);
 	~WorldWindow();
+
+	void UpdateFromRenderer();
+
+	wiGUI* GUI;
+
+	wiWindow* worldWindow;
+	wiSlider* fogStartSlider;
+	wiSlider* fogEndSlider;
+	wiSlider* fogHeightSlider;
 };
 

@@ -122,9 +122,9 @@ void EditorComponent::Load()
 
 	materialWnd = new MaterialWindow(&GetGUI());
 	postprocessWnd = new PostprocessWindow(this);
-	worldWnd = new WorldWindow;
+	worldWnd = new WorldWindow(&GetGUI());
 	objectWnd = new ObjectWindow(&GetGUI());
-	meshWnd = new MeshWindow;
+	meshWnd = new MeshWindow(&GetGUI());
 	cameraWnd = new CameraWindow(&GetGUI());
 
 	float screenW = (float)wiRenderer::GetDevice()->GetScreenWidth();
@@ -135,7 +135,7 @@ void EditorComponent::Load()
 	worldWnd_Toggle->SetSize(XMFLOAT2(100, 40));
 	worldWnd_Toggle->SetFontScaling(0.4f);
 	worldWnd_Toggle->OnClick([=](wiEventArgs args) {
-		wiHelper::messageBox("TODO");
+		worldWnd->worldWindow->SetVisible(!worldWnd->worldWindow->IsVisible());
 	});
 	GetGUI().AddWidget(worldWnd_Toggle);
 
@@ -153,7 +153,7 @@ void EditorComponent::Load()
 	meshWnd_Toggle->SetSize(XMFLOAT2(100, 40));
 	meshWnd_Toggle->SetFontScaling(0.4f);
 	meshWnd_Toggle->OnClick([=](wiEventArgs args) {
-		wiHelper::messageBox("TODO");
+		meshWnd->meshWindow->SetVisible(!meshWnd->meshWindow->IsVisible());
 	});
 	GetGUI().AddWidget(meshWnd_Toggle);
 
@@ -229,6 +229,7 @@ void EditorComponent::Load()
 				});
 				loader->onFinished([=] {
 					main->activateComponent(this);
+					worldWnd->UpdateFromRenderer();
 				});
 				main->activateComponent(loader);
 			}
@@ -375,17 +376,19 @@ void EditorComponent::Update()
 
 			if (pick.object != nullptr)
 			{
+				meshWnd->SetMesh(pick.object->mesh);
 				if (pick.subsetIndex < (int)pick.object->mesh->subsets.size())
 				{
 					Material* material = pick.object->mesh->subsets[pick.subsetIndex].material;
 
-					materialWnd->SelectMaterial(material);
+					materialWnd->SetMaterial(material);
 				}
 
 			}
 			else
 			{
-				materialWnd->SelectMaterial(nullptr);
+				meshWnd->SetMesh(nullptr);
+				materialWnd->SetMaterial(nullptr);
 			}
 		}
 

@@ -14,7 +14,7 @@ CameraWindow::CameraWindow(wiGUI* gui) :GUI(gui)
 	cameraWindow->SetSize(XMFLOAT2(400, 300));
 	GUI->AddWidget(cameraWindow);
 
-	float x = 150;
+	float x = 200;
 	float y = 0;
 
 	farPlaneSlider = new wiSlider(1, 5000, 1000, 100000, "Far Plane: ");

@@ -13,7 +13,7 @@ public:
 	MaterialWindow(wiGUI* gui);
 	~MaterialWindow();
 
-	void SelectMaterial(Material* mat);
+	void SetMaterial(Material* mat);
 
 	wiGUI* GUI;
 

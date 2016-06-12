@@ -119,7 +119,7 @@ MaterialWindow::~MaterialWindow()
 
 
 
-void MaterialWindow::SelectMaterial(Material* mat)
+void MaterialWindow::SetMaterial(Material* mat)
 {
 	material = mat;
 	if (material != nullptr)
