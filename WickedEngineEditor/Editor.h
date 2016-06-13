@@ -10,8 +10,12 @@ class CameraWindow;
 
 class EditorLoadingScreen : public LoadingScreenComponent
 {
+private:
+	wiSprite sprite;
 public:
+	void Load() override;
 	void Compose() override;
+	void Unload() override;
 };
 
 class Editor;
@@ -32,6 +36,7 @@ public:
 	void Load() override;
 	void Start() override;
 	void Update() override;
+	void Render() override;
 	void Unload() override;
 };
 

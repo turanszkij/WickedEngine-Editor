@@ -25,7 +25,7 @@ Editor::Editor()
 Editor::~Editor()
 {
 	//SAFE_DELETE(renderComponent);
-	SAFE_DELETE(loader);
+	//SAFE_DELETE(loader);
 }
 
 void Editor::Initialize()
@@ -63,6 +63,7 @@ void Editor::Initialize()
 	renderComponent->Initialize();
 	loader = new EditorLoadingScreen;
 	loader->Initialize();
+	loader->Load();
 
 	renderComponent->loader = loader;
 	renderComponent->main = this;
@@ -85,11 +86,28 @@ void SplitFilename(const string& path, string& folder, string& file)
 	file = path.substr(found + 1);
 }
 
+void EditorLoadingScreen::Load()
+{
+	sprite = wiSprite();
+	sprite.setTexture(wiTextureHelper::getInstance()->getWhite());
+	sprite.anim.rot = 0.05f;
+	sprite.effects.pos = XMFLOAT3(wiRenderer::GetDevice()->GetScreenWidth()*0.9f, wiRenderer::GetDevice()->GetScreenHeight()*0.8f, 0);
+	sprite.effects.siz = XMFLOAT2(50, 50);
+	sprite.effects.pivot = XMFLOAT2(0.5f, 0.5f);
+	addSprite(&sprite);
 
+	__super::Load();
+}
 void EditorLoadingScreen::Compose()
 {
+	__super::Compose();
+
 	wiFont("Loading...", wiFontProps(wiRenderer::GetDevice()->GetScreenWidth() * 0.5f, wiRenderer::GetDevice()->GetScreenHeight() * 0.5f, 22,
 		WIFALIGN_MID, WIFALIGN_MID)).Draw();
+}
+void EditorLoadingScreen::Unload()
+{
+
 }
 
 wiTranslator* translator = nullptr;
@@ -436,11 +454,15 @@ void EditorComponent::Update()
 	translator->Update();
 
 	__super::Update();
-
+}
+void EditorComponent::Render()
+{
 	if (translator_active)
 	{
 		wiRenderer::AddRenderableTranslator(translator);
 	}
+
+	__super::Render();
 }
 void EditorComponent::Unload()
 {
