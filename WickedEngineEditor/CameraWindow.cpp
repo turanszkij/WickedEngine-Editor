@@ -51,7 +51,7 @@ CameraWindow::CameraWindow(wiGUI* gui) :GUI(gui)
 	cameraWindow->AddWidget(fovSlider);
 
 	resetButton = new wiButton("Reset Pos");
-	fovSlider->SetSize(XMFLOAT2(80, 30));
+	resetButton->SetSize(XMFLOAT2(140, 30));
 	resetButton->SetPos(XMFLOAT2(x, y += inc));
 	resetButton->OnClick([&](wiEventArgs args) {
 		ResetCam();
