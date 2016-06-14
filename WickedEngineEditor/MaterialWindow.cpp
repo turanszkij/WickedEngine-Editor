@@ -37,7 +37,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 	});
 	materialWindow->AddWidget(normalMapSlider);
 
-	roughnessSlider = new wiSlider(0, 1, 0.5, 1000, "Roughness: ");
+	roughnessSlider = new wiSlider(0, 1, 0.5f, 1000, "Roughness: ");
 	roughnessSlider->SetSize(XMFLOAT2(100, 30));
 	roughnessSlider->SetPos(XMFLOAT2(400, 100));
 	roughnessSlider->OnSlide([&](wiEventArgs args) {
@@ -45,7 +45,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 	});
 	materialWindow->AddWidget(roughnessSlider);
 
-	reflectanceSlider = new wiSlider(0, 1, 0.5, 1000, "Reflectance: ");
+	reflectanceSlider = new wiSlider(0, 1, 0.5f, 1000, "Reflectance: ");
 	reflectanceSlider->SetSize(XMFLOAT2(100, 30));
 	reflectanceSlider->SetPos(XMFLOAT2(400, 140));
 	reflectanceSlider->OnSlide([&](wiEventArgs args) {
@@ -53,7 +53,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 	});
 	materialWindow->AddWidget(reflectanceSlider);
 
-	metalnessSlider = new wiSlider(0, 1, 0.0, 1000, "Metalness: ");
+	metalnessSlider = new wiSlider(0, 1, 0.0f, 1000, "Metalness: ");
 	metalnessSlider->SetSize(XMFLOAT2(100, 30));
 	metalnessSlider->SetPos(XMFLOAT2(400, 180));
 	metalnessSlider->OnSlide([&](wiEventArgs args) {
@@ -61,7 +61,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 	});
 	materialWindow->AddWidget(metalnessSlider);
 
-	alphaSlider = new wiSlider(0, 1, 1.0, 1000, "Alpha: ");
+	alphaSlider = new wiSlider(0, 1, 1.0f, 1000, "Alpha: ");
 	alphaSlider->SetSize(XMFLOAT2(100, 30));
 	alphaSlider->SetPos(XMFLOAT2(400, 220));
 	alphaSlider->OnSlide([&](wiEventArgs args) {
@@ -69,7 +69,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 	});
 	materialWindow->AddWidget(alphaSlider);
 
-	refractionIndexSlider = new wiSlider(0, 1.0, 0.02, 1000, "Refraction Index: ");
+	refractionIndexSlider = new wiSlider(0, 1.0f, 0.02f, 1000, "Refraction Index: ");
 	refractionIndexSlider->SetSize(XMFLOAT2(100, 30));
 	refractionIndexSlider->SetPos(XMFLOAT2(400, 260));
 	refractionIndexSlider->OnSlide([&](wiEventArgs args) {
@@ -77,7 +77,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 	});
 	materialWindow->AddWidget(refractionIndexSlider);
 
-	emissiveSlider = new wiSlider(0, 1, 0.0, 1000, "Emissive: ");
+	emissiveSlider = new wiSlider(0, 1, 0.0f, 1000, "Emissive: ");
 	emissiveSlider->SetSize(XMFLOAT2(100, 30));
 	emissiveSlider->SetPos(XMFLOAT2(400, 300));
 	emissiveSlider->OnSlide([&](wiEventArgs args) {
@@ -85,7 +85,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 	});
 	materialWindow->AddWidget(emissiveSlider);
 
-	sssSlider = new wiSlider(0, 1, 0.0, 1000, "Subsurface Scattering: ");
+	sssSlider = new wiSlider(0, 1, 0.0f, 1000, "Subsurface Scattering: ");
 	sssSlider->SetSize(XMFLOAT2(100, 30));
 	sssSlider->SetPos(XMFLOAT2(400, 340));
 	sssSlider->OnSlide([&](wiEventArgs args) {

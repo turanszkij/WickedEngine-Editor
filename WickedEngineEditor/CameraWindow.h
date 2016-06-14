@@ -19,5 +19,6 @@ public:
 	wiSlider* farPlaneSlider;
 	wiSlider* nearPlaneSlider;
 	wiSlider* fovSlider;
+	wiButton* resetButton;
 };
 

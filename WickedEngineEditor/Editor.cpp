@@ -74,8 +74,6 @@ void Editor::Initialize()
 
 	this->infoDisplay.fpsinfo = true;
 
-	wiRenderer::getCamera()->Translate(XMFLOAT3(0, 1, -10));
-
 }
 
 void SplitFilename(const string& path, string& folder, string& file)
@@ -132,6 +130,8 @@ void EndTranslate()
 	{
 		translatedEntity->attachTo(translatedEntity_Parent);
 	}
+	translatedEntity = nullptr;
+	translatedEntity_Parent = nullptr;
 }
 
 void EditorComponent::Initialize()
@@ -162,6 +162,7 @@ void EditorComponent::Load()
 
 
 	translator = new wiTranslator;
+	translator->enabled = false;
 
 	materialWnd = new MaterialWindow(&GetGUI());
 	postprocessWnd = new PostprocessWindow(this);
@@ -381,8 +382,8 @@ void EditorComponent::Load()
 	clearButton->SetSize(XMFLOAT2(100, 40));
 	clearButton->SetFontScaling(0.25f);
 	clearButton->OnClick([](wiEventArgs args) {
-		wiRenderer::CleanUpStaticTemp();
 		EndTranslate();
+		wiRenderer::CleanUpStaticTemp();
 	});
 	GetGUI().AddWidget(clearButton);
 
