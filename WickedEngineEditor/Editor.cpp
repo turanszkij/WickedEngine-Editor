@@ -235,10 +235,38 @@ void EditorComponent::Load()
 
 	wiCheckBox* translatorCheckBox = new wiCheckBox("Translator: ");
 	translatorCheckBox->SetPos(XMFLOAT2(screenW - 335, 0));
+	translatorCheckBox->SetSize(XMFLOAT2(18, 18));
 	translatorCheckBox->OnClick([=](wiEventArgs args) {
 		translator->enabled = args.bValue;
 	});
 	GetGUI().AddWidget(translatorCheckBox);
+
+	wiCheckBox* isScalatorCheckBox = new wiCheckBox("S:");
+	isScalatorCheckBox->SetPos(XMFLOAT2(screenW - 415, 22));
+	isScalatorCheckBox->SetSize(XMFLOAT2(18, 18));
+	isScalatorCheckBox->OnClick([=](wiEventArgs args) {
+		translator->isScalator = args.bValue;
+	});
+	isScalatorCheckBox->SetCheck(translator->isScalator);
+	GetGUI().AddWidget(isScalatorCheckBox);
+
+	wiCheckBox* isRotatorCheckBox = new wiCheckBox("R:");
+	isRotatorCheckBox->SetPos(XMFLOAT2(screenW - 375, 22));
+	isRotatorCheckBox->SetSize(XMFLOAT2(18, 18));
+	isRotatorCheckBox->OnClick([=](wiEventArgs args) {
+		translator->isRotator = args.bValue;
+	});
+	isRotatorCheckBox->SetCheck(translator->isRotator);
+	GetGUI().AddWidget(isRotatorCheckBox);
+
+	wiCheckBox* isTranslatorCheckBox = new wiCheckBox("T:");
+	isTranslatorCheckBox->SetPos(XMFLOAT2(screenW - 335, 22));
+	isTranslatorCheckBox->SetSize(XMFLOAT2(18, 18));
+	isTranslatorCheckBox->OnClick([=](wiEventArgs args) {
+		translator->isTranslator = args.bValue;
+	});
+	isTranslatorCheckBox->SetCheck(translator->isTranslator);
+	GetGUI().AddWidget(isTranslatorCheckBox);
 
 
 
