@@ -51,6 +51,9 @@
     <ClInclude Include="CameraWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RendererWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -78,6 +81,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CameraWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

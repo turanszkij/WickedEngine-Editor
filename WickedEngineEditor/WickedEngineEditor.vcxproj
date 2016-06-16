@@ -166,6 +166,7 @@
     <ClInclude Include="MeshWindow.h" />
     <ClInclude Include="ObjectWindow.h" />
     <ClInclude Include="PostprocessWindow.h" />
+    <ClInclude Include="RendererWindow.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -179,6 +180,7 @@
     <ClCompile Include="MeshWindow.cpp" />
     <ClCompile Include="ObjectWindow.cpp" />
     <ClCompile Include="PostprocessWindow.cpp" />
+    <ClCompile Include="RendererWindow.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

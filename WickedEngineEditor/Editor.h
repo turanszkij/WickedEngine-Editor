@@ -7,6 +7,7 @@ class WorldWindow;
 class ObjectWindow;
 class MeshWindow;
 class CameraWindow;
+class RendererWindow;
 
 class EditorLoadingScreen : public LoadingScreenComponent
 {
@@ -28,6 +29,7 @@ public:
 	ObjectWindow*			objectWnd;
 	MeshWindow*				meshWnd;
 	CameraWindow*			cameraWnd;
+	RendererWindow*			rendererWnd;
 
 	Editor*					main;
 	EditorLoadingScreen*	loader;
