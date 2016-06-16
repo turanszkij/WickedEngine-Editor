@@ -17,5 +17,8 @@ public:
 
 	wiWindow*	rendererWindow;
 	wiCheckBox* vsyncCheckBox;
+	wiCheckBox* partitionBoxesCheckBox;
+	wiCheckBox* boneLinesCheckBox;
+	wiCheckBox* envProbesCheckBox;
 };
 
