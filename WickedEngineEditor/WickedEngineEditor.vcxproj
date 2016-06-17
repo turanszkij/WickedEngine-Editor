@@ -162,6 +162,7 @@
   <ItemGroup>
     <ClInclude Include="CameraWindow.h" />
     <ClInclude Include="Editor.h" />
+    <ClInclude Include="EnvProbeWindow.h" />
     <ClInclude Include="MaterialWindow.h" />
     <ClInclude Include="MeshWindow.h" />
     <ClInclude Include="ObjectWindow.h" />
@@ -176,6 +177,7 @@
   <ItemGroup>
     <ClCompile Include="CameraWindow.cpp" />
     <ClCompile Include="Editor.cpp" />
+    <ClCompile Include="EnvProbeWindow.cpp" />
     <ClCompile Include="MaterialWindow.cpp" />
     <ClCompile Include="MeshWindow.cpp" />
     <ClCompile Include="ObjectWindow.cpp" />

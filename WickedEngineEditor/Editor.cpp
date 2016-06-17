@@ -9,6 +9,7 @@
 #include "MeshWindow.h"
 #include "CameraWindow.h"
 #include "RendererWindow.h"
+#include "EnvProbeWindow.h"
 
 #include <Commdlg.h> // openfile
 #include <WinBase.h>
@@ -129,6 +130,7 @@ void EndTranslate()
 	translator->detach();
 	if (translatedEntity != nullptr)
 	{
+		translatedEntity->detach();
 		translatedEntity->attachTo(translatedEntity_Parent);
 	}
 	translatedEntity = nullptr;
@@ -173,6 +175,7 @@ void EditorComponent::Load()
 	meshWnd = new MeshWindow(&GetGUI());
 	cameraWnd = new CameraWindow(&GetGUI());
 	rendererWnd = new RendererWindow(&GetGUI());
+	envProbeWnd = new EnvProbeWindow(&GetGUI());
 
 	float screenW = (float)wiRenderer::GetDevice()->GetScreenWidth();
 	float screenH = (float)wiRenderer::GetDevice()->GetScreenHeight();
@@ -241,6 +244,15 @@ void EditorComponent::Load()
 		cameraWnd->cameraWindow->SetVisible(!cameraWnd->cameraWindow->IsVisible());
 	});
 	GetGUI().AddWidget(cameraWnd_Toggle);
+
+	wiButton* envProbeWnd_Toggle = new wiButton("EnvProbe");
+	envProbeWnd_Toggle->SetPos(XMFLOAT2(x += step, screenH - 40));
+	envProbeWnd_Toggle->SetSize(XMFLOAT2(100, 40));
+	envProbeWnd_Toggle->SetFontScaling(0.3f);
+	envProbeWnd_Toggle->OnClick([=](wiEventArgs args) {
+		envProbeWnd->envProbeWindow->SetVisible(!envProbeWnd->envProbeWindow->IsVisible());
+	});
+	GetGUI().AddWidget(envProbeWnd_Toggle);
 
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -466,22 +478,30 @@ void EditorComponent::Update()
 		if (wiInputManager::GetInstance()->press(VK_RBUTTON))
 		{
 			wiRenderer::Picked pick = wiRenderer::Pick((long)currentMouse.x, (long)currentMouse.y, 
-				PICK_OPAQUE | PICK_TRANSPARENT | PICK_WATER);
+				PICK_OPAQUE | PICK_TRANSPARENT | PICK_WATER | PICK_ENVPROBE);
 
 			objectWnd->SetObject(pick.object);
 
-			if (pick.object != nullptr)
+			if (pick.transform != nullptr)
 			{
-				meshWnd->SetMesh(pick.object->mesh);
-				if (pick.subsetIndex < (int)pick.object->mesh->subsets.size())
+				if (pick.object != nullptr)
 				{
-					Material* material = pick.object->mesh->subsets[pick.subsetIndex].material;
+					meshWnd->SetMesh(pick.object->mesh);
+					if (pick.subsetIndex < (int)pick.object->mesh->subsets.size())
+					{
+						Material* material = pick.object->mesh->subsets[pick.subsetIndex].material;
 
-					materialWnd->SetMaterial(material);
+						materialWnd->SetMaterial(material);
+					}
+				}
+				else
+				{
+					meshWnd->SetMesh(nullptr);
+					materialWnd->SetMaterial(nullptr);
 				}
 
 				EndTranslate();
-				BeginTranslate(pick.object);
+				BeginTranslate(pick.transform);
 			}
 			else
 			{

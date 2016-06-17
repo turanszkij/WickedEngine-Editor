@@ -14,7 +14,7 @@ RendererWindow::RendererWindow(wiGUI* gui) : GUI(gui)
 	rendererWindow->SetEnabled(true);
 	GUI->AddWidget(rendererWindow);
 
-	float x = 200, y = 0, step = 30;
+	float x = 250, y = 0, step = 30;
 
 	vsyncCheckBox = new wiCheckBox("VSync: ");
 	vsyncCheckBox->SetPos(XMFLOAT2(x, y += step));
