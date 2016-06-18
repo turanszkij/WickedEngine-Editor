@@ -30,9 +30,9 @@ RendererWindow::RendererWindow(wiGUI* gui) : GUI(gui)
 	partitionBoxesCheckBox = new wiCheckBox("SPTree visualizer: ");
 	partitionBoxesCheckBox->SetPos(XMFLOAT2(x, y += step));
 	partitionBoxesCheckBox->OnClick([](wiEventArgs args) {
-		wiRenderer::SetToDrawDebugBoxes(args.bValue);
+		wiRenderer::SetToDrawDebugPartitionTree(args.bValue);
 	});
-	partitionBoxesCheckBox->SetCheck(wiRenderer::GetToDrawDebugBoxes());
+	partitionBoxesCheckBox->SetCheck(wiRenderer::GetToDrawDebugPartitionTree());
 	rendererWindow->AddWidget(partitionBoxesCheckBox);
 
 	boneLinesCheckBox = new wiCheckBox("Bone line visualizer: ");
@@ -60,6 +60,26 @@ RendererWindow::RendererWindow(wiGUI* gui) : GUI(gui)
 	rendererWindow->AddWidget(gridHelperCheckBox);
 
 
+	pickTypeObjectCheckBox = new wiCheckBox("Pick Objects: ");
+	pickTypeObjectCheckBox->SetPos(XMFLOAT2(x, y += step));
+	pickTypeObjectCheckBox->SetCheck(true);
+	rendererWindow->AddWidget(pickTypeObjectCheckBox);
+
+	pickTypeEnvProbeCheckBox = new wiCheckBox("Pick EnvProbes: ");
+	pickTypeEnvProbeCheckBox->SetPos(XMFLOAT2(x, y += step));
+	pickTypeEnvProbeCheckBox->SetCheck(true);
+	rendererWindow->AddWidget(pickTypeEnvProbeCheckBox);
+
+	pickTypeLightCheckBox = new wiCheckBox("Pick Lights: ");
+	pickTypeLightCheckBox->SetPos(XMFLOAT2(x, y += step));
+	pickTypeLightCheckBox->SetCheck(true);
+	rendererWindow->AddWidget(pickTypeLightCheckBox);
+
+	pickTypeDecalCheckBox = new wiCheckBox("Pick Decals: ");
+	pickTypeDecalCheckBox->SetPos(XMFLOAT2(x, y += step));
+	pickTypeDecalCheckBox->SetCheck(true);
+	rendererWindow->AddWidget(pickTypeDecalCheckBox);
+
 
 
 	rendererWindow->Translate(XMFLOAT3(30, 30, 0));
@@ -75,4 +95,33 @@ RendererWindow::~RendererWindow()
 	SAFE_DELETE(boneLinesCheckBox);
 	SAFE_DELETE(envProbesCheckBox);
 	SAFE_DELETE(gridHelperCheckBox);
+	SAFE_DELETE(pickTypeObjectCheckBox);
+	SAFE_DELETE(pickTypeEnvProbeCheckBox);
+	SAFE_DELETE(pickTypeLightCheckBox);
+	SAFE_DELETE(pickTypeDecalCheckBox);
+}
+
+int RendererWindow::GetPickType()
+{
+	int pickType = PICK_VOID;
+	if (pickTypeObjectCheckBox->GetCheck())
+	{
+		pickType |= PICK_OPAQUE;
+		pickType |= PICK_TRANSPARENT;
+		pickType |= PICK_WATER;
+	}
+	if (pickTypeEnvProbeCheckBox->GetCheck())
+	{
+		pickType |= PICK_ENVPROBE;
+	}
+	if (pickTypeLightCheckBox->GetCheck())
+	{
+		pickType |= PICK_LIGHT;
+	}
+	if (pickTypeDecalCheckBox->GetCheck())
+	{
+		pickType |= PICK_DECAL;
+	}
+
+	return pickType;
 }

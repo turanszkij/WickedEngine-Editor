@@ -21,5 +21,11 @@ public:
 	wiCheckBox* boneLinesCheckBox;
 	wiCheckBox* envProbesCheckBox;
 	wiCheckBox* gridHelperCheckBox;
+	wiCheckBox* pickTypeObjectCheckBox;
+	wiCheckBox* pickTypeEnvProbeCheckBox;
+	wiCheckBox* pickTypeLightCheckBox;
+	wiCheckBox* pickTypeDecalCheckBox;
+
+	int GetPickType();
 };
 

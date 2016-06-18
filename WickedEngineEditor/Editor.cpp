@@ -110,6 +110,7 @@ void EditorLoadingScreen::Unload()
 
 }
 
+wiRenderer::Picked picked = wiRenderer::Picked();
 wiTranslator* translator = nullptr;
 bool translator_active = false;
 Transform* translatedEntity = nullptr;
@@ -136,6 +137,7 @@ void EndTranslate()
 	translatedEntity = nullptr;
 	translatedEntity_Parent = nullptr;
 }
+
 
 void EditorComponent::Initialize()
 {
@@ -436,6 +438,7 @@ void EditorComponent::Load()
 	clearButton->SetSize(XMFLOAT2(100, 40));
 	clearButton->SetFontScaling(0.25f);
 	clearButton->OnClick([](wiEventArgs args) {
+		picked = wiRenderer::Picked();
 		EndTranslate();
 		wiRenderer::CleanUpStaticTemp();
 	});
@@ -477,22 +480,23 @@ void EditorComponent::Update()
 
 		if (wiInputManager::GetInstance()->press(VK_RBUTTON))
 		{
-			wiRenderer::Picked pick = wiRenderer::Pick((long)currentMouse.x, (long)currentMouse.y, 
-				PICK_OPAQUE | PICK_TRANSPARENT | PICK_WATER | PICK_ENVPROBE);
+			picked = wiRenderer::Pick((long)currentMouse.x, (long)currentMouse.y, rendererWnd->GetPickType());
 
-			objectWnd->SetObject(pick.object);
+			objectWnd->SetObject(picked.object);
 
-			if (pick.transform != nullptr)
+			if (picked.transform != nullptr)
 			{
-				if (pick.object != nullptr)
+				EndTranslate();
+				if (picked.object != nullptr)
 				{
-					meshWnd->SetMesh(pick.object->mesh);
-					if (pick.subsetIndex < (int)pick.object->mesh->subsets.size())
+					meshWnd->SetMesh(picked.object->mesh);
+					if (picked.subsetIndex < (int)picked.object->mesh->subsets.size())
 					{
-						Material* material = pick.object->mesh->subsets[pick.subsetIndex].material;
+						Material* material = picked.object->mesh->subsets[picked.subsetIndex].material;
 
 						materialWnd->SetMaterial(material);
 					}
+					BeginTranslate(picked.transform);
 				}
 				else
 				{
@@ -500,8 +504,15 @@ void EditorComponent::Update()
 					materialWnd->SetMaterial(nullptr);
 				}
 
-				EndTranslate();
-				BeginTranslate(pick.transform);
+				if (picked.light != nullptr)
+				{
+					BeginTranslate(picked.transform);
+				}
+				if (picked.decal != nullptr)
+				{
+					BeginTranslate(picked.transform);
+				}
+
 			}
 			else
 			{
@@ -524,6 +535,26 @@ void EditorComponent::Render()
 	{
 		wiRenderer::AddRenderableTranslator(translator);
 	}
+
+	if (picked.object != nullptr)
+	{
+		XMFLOAT4X4 selectionBox;
+		XMStoreFloat4x4(&selectionBox, picked.object->bounds.getAsBoxMatrix());
+		wiRenderer::AddRenderableBox(selectionBox, XMFLOAT4(1, 1, 1, 1));
+	}
+	if (picked.light != nullptr)
+	{
+		XMFLOAT4X4 selectionBox;
+		XMStoreFloat4x4(&selectionBox, picked.light->bounds.getAsBoxMatrix());
+		wiRenderer::AddRenderableBox(selectionBox, XMFLOAT4(1, 1, 1, 1));
+	}
+	if (picked.decal != nullptr)
+	{
+		XMFLOAT4X4 selectionBox;
+		selectionBox = picked.decal->world;
+		wiRenderer::AddRenderableBox(selectionBox, XMFLOAT4(1, 1, 1, 1));
+	}
+
 
 	__super::Render();
 }
