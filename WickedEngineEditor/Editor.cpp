@@ -110,32 +110,64 @@ void EditorLoadingScreen::Unload()
 
 }
 
-wiRenderer::Picked picked = wiRenderer::Picked();
 wiTranslator* translator = nullptr;
 bool translator_active = false;
-Transform* translatedEntity = nullptr;
-Transform* translatedEntity_Parent = nullptr;
-void BeginTranslate(Transform* entity)
+list<wiRenderer::Picked> selected;
+void BeginTranslate()
 {
-	translatedEntity = entity;
+	//translatedEntity = entity;
 	translator_active = true;
 	translator->Clear();
-	translator->Translate(translatedEntity->translation);
-	translatedEntity_Parent = translatedEntity->parent;
-	translatedEntity->detach();
-	translatedEntity->attachTo(translator);
+	//translator->Translate(translatedEntity->translation);
+	//translatedEntity_Parent = translatedEntity->parent;
+	//translatedEntity->detach();
+	//translatedEntity->attachTo(translator);
+
+	XMVECTOR centerV = XMVectorSet(0, 0, 0, 0);
+	float count = 0;
+	for (auto& x : selected)
+	{
+		if (x.transform != nullptr)
+		{
+			centerV = XMVectorAdd(centerV, XMLoadFloat3(&x.transform->translation));
+			count += 1.0f;
+		}
+	}
+	if (count > 0)
+	{
+		centerV /= count;
+		XMFLOAT3 center;
+		XMStoreFloat3(&center, centerV);
+		translator->Translate(center);
+		for (auto& x : selected)
+		{
+			if (x.transform != nullptr)
+			{
+				x.transform->detach();
+				x.transform->attachTo(translator);
+			}
+		}
+	}
 }
 void EndTranslate()
 {
 	translator_active = false;
 	translator->detach();
-	if (translatedEntity != nullptr)
+	//if (translatedEntity != nullptr)
+	//{
+	//	translatedEntity->detach();
+	//	translatedEntity->attachTo(translatedEntity_Parent);
+	//}
+	//translatedEntity = nullptr;
+	//translatedEntity_Parent = nullptr;
+
+	for (auto& x : selected)
 	{
-		translatedEntity->detach();
-		translatedEntity->attachTo(translatedEntity_Parent);
+		if (x.transform != nullptr)
+		{
+			x.transform->detach();
+		}
 	}
-	translatedEntity = nullptr;
-	translatedEntity_Parent = nullptr;
 }
 
 
@@ -438,7 +470,7 @@ void EditorComponent::Load()
 	clearButton->SetSize(XMFLOAT2(100, 40));
 	clearButton->SetFontScaling(0.25f);
 	clearButton->OnClick([](wiEventArgs args) {
-		picked = wiRenderer::Picked();
+		selected.clear();
 		EndTranslate();
 		wiRenderer::CleanUpStaticTemp();
 	});
@@ -480,13 +512,41 @@ void EditorComponent::Update()
 
 		if (wiInputManager::GetInstance()->press(VK_RBUTTON))
 		{
-			picked = wiRenderer::Pick((long)currentMouse.x, (long)currentMouse.y, rendererWnd->GetPickType());
+			wiRenderer::Picked picked = wiRenderer::Pick((long)currentMouse.x, (long)currentMouse.y, rendererWnd->GetPickType());
+
+			if (!selected.empty() && wiInputManager::GetInstance()->down(VK_LSHIFT))
+			{
+				list<wiRenderer::Picked>::iterator it = selected.begin();
+				for (; it != selected.end(); ++it)
+				{
+					if ((*it) == picked)
+					{
+						break;
+					}
+				}
+				if (it==selected.end())
+				{
+					selected.push_back(picked);
+				}
+				else
+				{
+					EndTranslate();
+					selected.erase(it);
+				}
+			}
+			else
+			{
+				EndTranslate();
+				selected.clear();
+				selected.push_back(picked);
+			}
 
 			objectWnd->SetObject(picked.object);
 
 			if (picked.transform != nullptr)
 			{
 				EndTranslate();
+
 				if (picked.object != nullptr)
 				{
 					meshWnd->SetMesh(picked.object->mesh);
@@ -496,7 +556,7 @@ void EditorComponent::Update()
 
 						materialWnd->SetMaterial(material);
 					}
-					BeginTranslate(picked.transform);
+					BeginTranslate();
 				}
 				else
 				{
@@ -506,11 +566,11 @@ void EditorComponent::Update()
 
 				if (picked.light != nullptr)
 				{
-					BeginTranslate(picked.transform);
+					BeginTranslate();
 				}
 				if (picked.decal != nullptr)
 				{
-					BeginTranslate(picked.transform);
+					BeginTranslate();
 				}
 
 			}
@@ -520,6 +580,7 @@ void EditorComponent::Update()
 				materialWnd->SetMaterial(nullptr);
 
 				EndTranslate();
+				selected.clear();
 			}
 		}
 
@@ -531,30 +592,38 @@ void EditorComponent::Update()
 }
 void EditorComponent::Render()
 {
-	if (translator_active)
+	if (!selected.empty())
 	{
-		wiRenderer::AddRenderableTranslator(translator);
-	}
+		if (translator_active)
+		{
+			wiRenderer::AddRenderableTranslator(translator);
+		}
 
-	if (picked.object != nullptr)
-	{
-		XMFLOAT4X4 selectionBox;
-		XMStoreFloat4x4(&selectionBox, picked.object->bounds.getAsBoxMatrix());
-		wiRenderer::AddRenderableBox(selectionBox, XMFLOAT4(1, 1, 1, 1));
-	}
-	if (picked.light != nullptr)
-	{
-		XMFLOAT4X4 selectionBox;
-		XMStoreFloat4x4(&selectionBox, picked.light->bounds.getAsBoxMatrix());
-		wiRenderer::AddRenderableBox(selectionBox, XMFLOAT4(1, 1, 1, 1));
-	}
-	if (picked.decal != nullptr)
-	{
-		XMFLOAT4X4 selectionBox;
-		selectionBox = picked.decal->world;
-		wiRenderer::AddRenderableBox(selectionBox, XMFLOAT4(1, 1, 1, 1));
-	}
+		AABB selectedAABB = AABB(XMFLOAT3(FLOAT32_MAX, FLOAT32_MAX, FLOAT32_MAX),XMFLOAT3(-FLOAT32_MAX, -FLOAT32_MAX, -FLOAT32_MAX));
+		for (auto& picked : selected)
+		{
+			if (picked.object != nullptr)
+			{
+				selectedAABB = AABB::Merge(selectedAABB, picked.object->bounds);
+			}
+			if (picked.light != nullptr)
+			{
+				selectedAABB = AABB::Merge(selectedAABB, picked.light->bounds);
+			}
+			if (picked.decal != nullptr)
+			{
+				selectedAABB = AABB::Merge(selectedAABB, picked.decal->bounds);
 
+				XMFLOAT4X4 selectionBox;
+				selectionBox = picked.decal->world;
+				wiRenderer::AddRenderableBox(selectionBox, XMFLOAT4(1, 0, 1, 1));
+			}
+		}
+
+		XMFLOAT4X4 selectionBox;
+		XMStoreFloat4x4(&selectionBox, selectedAABB.getAsBoxMatrix());
+		wiRenderer::AddRenderableBox(selectionBox, XMFLOAT4(1, 1, 1, 1));
+	}
 
 	__super::Render();
 }
