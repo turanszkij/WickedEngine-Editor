@@ -20,5 +20,6 @@ public:
 	wiCheckBox* partitionBoxesCheckBox;
 	wiCheckBox* boneLinesCheckBox;
 	wiCheckBox* envProbesCheckBox;
+	wiCheckBox* gridHelperCheckBox;
 };
 

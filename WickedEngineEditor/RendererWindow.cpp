@@ -9,6 +9,9 @@ RendererWindow::RendererWindow(wiGUI* gui) : GUI(gui)
 	float screenW = (float)wiRenderer::GetDevice()->GetScreenWidth();
 	float screenH = (float)wiRenderer::GetDevice()->GetScreenHeight();
 
+	wiRenderer::SetToDrawDebugEnvProbes(true);
+	wiRenderer::SetToDrawGridHelper(true);
+
 	rendererWindow = new wiWindow(GUI, "Renderer Window");
 	rendererWindow->SetSize(XMFLOAT2(600, 400));
 	rendererWindow->SetEnabled(true);
@@ -48,6 +51,14 @@ RendererWindow::RendererWindow(wiGUI* gui) : GUI(gui)
 	envProbesCheckBox->SetCheck(wiRenderer::GetToDrawDebugEnvProbes());
 	rendererWindow->AddWidget(envProbesCheckBox);
 
+	gridHelperCheckBox = new wiCheckBox("Grid helper: ");
+	gridHelperCheckBox->SetPos(XMFLOAT2(x, y += step));
+	gridHelperCheckBox->OnClick([](wiEventArgs args) {
+		wiRenderer::SetToDrawGridHelper(args.bValue);
+	});
+	gridHelperCheckBox->SetCheck(wiRenderer::GetToDrawGridHelper());
+	rendererWindow->AddWidget(gridHelperCheckBox);
+
 
 
 
@@ -63,4 +74,5 @@ RendererWindow::~RendererWindow()
 	SAFE_DELETE(partitionBoxesCheckBox);
 	SAFE_DELETE(boneLinesCheckBox);
 	SAFE_DELETE(envProbesCheckBox);
+	SAFE_DELETE(gridHelperCheckBox);
 }
