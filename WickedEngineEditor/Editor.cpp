@@ -316,15 +316,17 @@ void EditorComponent::Load()
 
 
 	wiCheckBox* translatorCheckBox = new wiCheckBox("Translator: ");
-	translatorCheckBox->SetPos(XMFLOAT2(screenW - 335, 0));
+	translatorCheckBox->SetPos(XMFLOAT2(screenW - 440, 0));
 	translatorCheckBox->SetSize(XMFLOAT2(18, 18));
 	translatorCheckBox->OnClick([=](wiEventArgs args) {
+		if(!args.bValue)
+			EndTranslate();
 		translator->enabled = args.bValue;
 	});
 	GetGUI().AddWidget(translatorCheckBox);
 
 	wiCheckBox* isScalatorCheckBox = new wiCheckBox("S:");
-	isScalatorCheckBox->SetPos(XMFLOAT2(screenW - 415, 22));
+	isScalatorCheckBox->SetPos(XMFLOAT2(screenW - 520, 22));
 	isScalatorCheckBox->SetSize(XMFLOAT2(18, 18));
 	isScalatorCheckBox->OnClick([=](wiEventArgs args) {
 		translator->isScalator = args.bValue;
@@ -333,7 +335,7 @@ void EditorComponent::Load()
 	GetGUI().AddWidget(isScalatorCheckBox);
 
 	wiCheckBox* isRotatorCheckBox = new wiCheckBox("R:");
-	isRotatorCheckBox->SetPos(XMFLOAT2(screenW - 375, 22));
+	isRotatorCheckBox->SetPos(XMFLOAT2(screenW - 480, 22));
 	isRotatorCheckBox->SetSize(XMFLOAT2(18, 18));
 	isRotatorCheckBox->OnClick([=](wiEventArgs args) {
 		translator->isRotator = args.bValue;
@@ -342,7 +344,7 @@ void EditorComponent::Load()
 	GetGUI().AddWidget(isRotatorCheckBox);
 
 	wiCheckBox* isTranslatorCheckBox = new wiCheckBox("T:");
-	isTranslatorCheckBox->SetPos(XMFLOAT2(screenW - 335, 22));
+	isTranslatorCheckBox->SetPos(XMFLOAT2(screenW - 440, 22));
 	isTranslatorCheckBox->SetSize(XMFLOAT2(18, 18));
 	isTranslatorCheckBox->OnClick([=](wiEventArgs args) {
 		translator->isTranslator = args.bValue;
@@ -351,18 +353,68 @@ void EditorComponent::Load()
 	GetGUI().AddWidget(isTranslatorCheckBox);
 
 
+	wiButton* saveButton = new wiButton("Save");
+	saveButton->SetPos(XMFLOAT2(screenW - 415, 0));
+	saveButton->SetSize(XMFLOAT2(100, 40));
+	saveButton->SetFontScaling(0.25f);
+	saveButton->SetColor(wiColor(0, 198, 101, 200), wiWidget::WIDGETSTATE::IDLE);
+	saveButton->SetColor(wiColor(0, 255, 140, 255), wiWidget::WIDGETSTATE::FOCUS);
+	saveButton->OnClick([=](wiEventArgs args) {
+		EndTranslate();
+
+		char szFile[260];
+
+		OPENFILENAMEA ofn;
+		ZeroMemory(&ofn, sizeof(ofn));
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = nullptr;
+		ofn.lpstrFile = szFile;
+		// Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
+		// use the contents of szFile to initialize itself.
+		ofn.lpstrFile[0] = '\0';
+		ofn.nMaxFile = sizeof(szFile);
+		ofn.lpstrFilter = "Wicked Model Format\0*.wimf\0";
+		ofn.nFilterIndex = 1;
+		ofn.lpstrFileTitle = NULL;
+		ofn.nMaxFileTitle = 0;
+		ofn.lpstrInitialDir = NULL;
+		ofn.Flags = OFN_OVERWRITEPROMPT;
+		if (GetSaveFileNameA(&ofn) == TRUE) {
+			string fileName = ofn.lpstrFile;
+			if (fileName.substr(fileName.length() - 5).compare(".wimf") != 0)
+			{
+				fileName += ".wimf";
+			}
+			wiArchive archive(fileName, false);
+			if (archive.IsOpen())
+			{
+				auto& children = wiRenderer::GetScene().GetWorldNode()->children;
+				for(auto& x : children)
+				{
+					Model* model = dynamic_cast<Model*>(x);
+					if (model != nullptr)
+					{
+						model->Serialize(archive);
+						break;
+					}
+				}
+			}
+			else
+			{
+				wiHelper::messageBox("Could not create " + fileName + "!");
+			}
+		}
+	});
+	GetGUI().AddWidget(saveButton);
+
 
 	wiButton* modelButton = new wiButton("LoadModel");
 	modelButton->SetPos(XMFLOAT2(screenW - 310, 0));
 	modelButton->SetSize(XMFLOAT2(100, 40));
 	modelButton->SetFontScaling(0.25f);
+	modelButton->SetColor(wiColor(0, 89, 255, 200), wiWidget::WIDGETSTATE::IDLE);
+	modelButton->SetColor(wiColor(112, 155, 255, 255), wiWidget::WIDGETSTATE::FOCUS);
 	modelButton->OnClick([=](wiEventArgs args) {
-		//wiRenderer::CleanUpStaticTemp();
-		//wiRenderer::LoadModel("CONTENT/models/cube/", "cube");
-
-		//wiRenderer::LoadModel("CONTENT/models/Havoc/1/", "Havoc");
-		//wiRenderer::LoadModel("CONTENT/models/instanceBenchmark2/", "instanceBenchmark2");
-
 		thread([&] {
 			char szFile[260];
 
@@ -375,7 +427,7 @@ void EditorComponent::Load()
 			// use the contents of szFile to initialize itself.
 			ofn.lpstrFile[0] = '\0';
 			ofn.nMaxFile = sizeof(szFile);
-			ofn.lpstrFilter = "Wicked Model Format\0*.wio\0";
+			ofn.lpstrFilter = "Wicked Model Format\0*.wimf;*.wio\0";
 			ofn.nFilterIndex = 1;
 			ofn.lpstrFileTitle = NULL;
 			ofn.nMaxFileTitle = 0;
@@ -385,7 +437,15 @@ void EditorComponent::Load()
 				string fileName = ofn.lpstrFile;
 				string dir, file;
 				SplitFilename(fileName, dir, file);
-				file = file.substr(0, file.length() - 4);
+
+				if (fileName.substr(fileName.length() - 5).compare(".wimf") == 0)
+				{
+					file = file.substr(0, file.length() - 5);
+				}
+				else
+				{
+					file = file.substr(0, file.length() - 4);
+				}
 
 				loader->addLoadingFunction([=] {
 					wiRenderer::LoadModel(dir, file);
@@ -405,9 +465,9 @@ void EditorComponent::Load()
 	skyButton->SetPos(XMFLOAT2(screenW - 205, 0));
 	skyButton->SetSize(XMFLOAT2(100, 18));
 	skyButton->SetFontScaling(0.5f);
+	skyButton->SetColor(wiColor(0, 89, 255, 200), wiWidget::WIDGETSTATE::IDLE);
+	skyButton->SetColor(wiColor(112, 155, 255, 255), wiWidget::WIDGETSTATE::FOCUS);
 	skyButton->OnClick([=](wiEventArgs args) {
-		//wiRenderer::SetEnviromentMap((Texture2D*)Content.add("CONTENT/env.dds"));
-
 		auto x = wiRenderer::GetEnviromentMap();
 
 		if (x == nullptr)
@@ -449,6 +509,8 @@ void EditorComponent::Load()
 	colorGradingButton->SetPos(XMFLOAT2(screenW - 205, 22));
 	colorGradingButton->SetSize(XMFLOAT2(100, 18));
 	colorGradingButton->SetFontScaling(0.45f);
+	colorGradingButton->SetColor(wiColor(0, 89, 255, 200), wiWidget::WIDGETSTATE::IDLE);
+	colorGradingButton->SetColor(wiColor(112, 155, 255, 255), wiWidget::WIDGETSTATE::FOCUS);
 	colorGradingButton->OnClick([=](wiEventArgs args) {
 		auto x = wiRenderer::GetColorGrading();
 
@@ -491,6 +553,8 @@ void EditorComponent::Load()
 	clearButton->SetPos(XMFLOAT2(screenW - 100, 0));
 	clearButton->SetSize(XMFLOAT2(100, 40));
 	clearButton->SetFontScaling(0.25f);
+	clearButton->SetColor(wiColor(190, 0, 0, 200), wiWidget::WIDGETSTATE::IDLE);
+	clearButton->SetColor(wiColor(255, 0, 0, 255), wiWidget::WIDGETSTATE::FOCUS);
 	clearButton->OnClick([](wiEventArgs args) {
 		selected.clear();
 		EndTranslate();

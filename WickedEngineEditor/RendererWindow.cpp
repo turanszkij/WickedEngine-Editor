@@ -80,6 +80,14 @@ RendererWindow::RendererWindow(wiGUI* gui) : GUI(gui)
 	pickTypeDecalCheckBox->SetCheck(true);
 	rendererWindow->AddWidget(pickTypeDecalCheckBox);
 
+	speedMultiplierSlider = new wiSlider(0, 4, 1, 100000, "Speed: ");
+	speedMultiplierSlider->SetSize(XMFLOAT2(100, 30));
+	speedMultiplierSlider->SetPos(XMFLOAT2(x, y += 30));
+	speedMultiplierSlider->OnSlide([&](wiEventArgs args) {
+		wiRenderer::SetGameSpeed(args.fValue);
+	});
+	rendererWindow->AddWidget(speedMultiplierSlider);
+
 
 
 	rendererWindow->Translate(XMFLOAT3(30, 30, 0));
@@ -99,6 +107,7 @@ RendererWindow::~RendererWindow()
 	SAFE_DELETE(pickTypeEnvProbeCheckBox);
 	SAFE_DELETE(pickTypeLightCheckBox);
 	SAFE_DELETE(pickTypeDecalCheckBox);
+	SAFE_DELETE(speedMultiplierSlider);
 }
 
 int RendererWindow::GetPickType()

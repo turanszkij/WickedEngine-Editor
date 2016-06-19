@@ -25,6 +25,7 @@ public:
 	wiCheckBox* pickTypeEnvProbeCheckBox;
 	wiCheckBox* pickTypeLightCheckBox;
 	wiCheckBox* pickTypeDecalCheckBox;
+	wiSlider*	speedMultiplierSlider;
 
 	int GetPickType();
 };
