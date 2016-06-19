@@ -10,6 +10,8 @@
 #include "CameraWindow.h"
 #include "RendererWindow.h"
 #include "EnvProbeWindow.h"
+#include "DecalWindow.h"
+#include "LightWindow.h"
 
 #include <Commdlg.h> // openfile
 #include <WinBase.h>
@@ -210,6 +212,8 @@ void EditorComponent::Load()
 	cameraWnd = new CameraWindow(&GetGUI());
 	rendererWnd = new RendererWindow(&GetGUI());
 	envProbeWnd = new EnvProbeWindow(&GetGUI());
+	decalWnd = new DecalWindow(&GetGUI());
+	lightWnd = new LightWindow(&GetGUI());
 
 	float screenW = (float)wiRenderer::GetDevice()->GetScreenWidth();
 	float screenH = (float)wiRenderer::GetDevice()->GetScreenHeight();
@@ -287,6 +291,24 @@ void EditorComponent::Load()
 		envProbeWnd->envProbeWindow->SetVisible(!envProbeWnd->envProbeWindow->IsVisible());
 	});
 	GetGUI().AddWidget(envProbeWnd_Toggle);
+
+	wiButton* decalWnd_Toggle = new wiButton("Decal");
+	decalWnd_Toggle->SetPos(XMFLOAT2(x += step, screenH - 40));
+	decalWnd_Toggle->SetSize(XMFLOAT2(100, 40));
+	decalWnd_Toggle->SetFontScaling(0.3f);
+	decalWnd_Toggle->OnClick([=](wiEventArgs args) {
+		decalWnd->decalWindow->SetVisible(!decalWnd->decalWindow->IsVisible());
+	});
+	GetGUI().AddWidget(decalWnd_Toggle);
+
+	wiButton* lightWnd_Toggle = new wiButton("Light");
+	lightWnd_Toggle->SetPos(XMFLOAT2(x += step, screenH - 40));
+	lightWnd_Toggle->SetSize(XMFLOAT2(100, 40));
+	lightWnd_Toggle->SetFontScaling(0.3f);
+	lightWnd_Toggle->OnClick([=](wiEventArgs args) {
+		lightWnd->lightWindow->SetVisible(!lightWnd->lightWindow->IsVisible());
+	});
+	GetGUI().AddWidget(lightWnd_Toggle);
 
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -568,10 +590,12 @@ void EditorComponent::Update()
 				{
 					BeginTranslate();
 				}
+				lightWnd->SetLight(picked.light);
 				if (picked.decal != nullptr)
 				{
 					BeginTranslate();
 				}
+				decalWnd->SetDecal(picked.decal);
 
 			}
 			else
@@ -636,6 +660,8 @@ void EditorComponent::Unload()
 	SAFE_DELETE(objectWnd);
 	SAFE_DELETE(meshWnd);
 	SAFE_DELETE(cameraWnd);
+	SAFE_DELETE(decalWnd);
+	SAFE_DELETE(lightWnd);
 
 	SAFE_DELETE(translator);
 

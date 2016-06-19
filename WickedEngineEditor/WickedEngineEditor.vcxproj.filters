@@ -57,6 +57,12 @@
     <ClInclude Include="EnvProbeWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LightWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DecalWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -90,6 +96,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EnvProbeWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LightWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DecalWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
