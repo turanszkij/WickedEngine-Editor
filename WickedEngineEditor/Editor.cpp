@@ -634,7 +634,10 @@ void EditorComponent::Update()
 				selected.clear();
 				selected.push_back(picked);
 				savedParents.clear();
-				savedParents.insert(pair<Transform*, Transform*>(picked.transform, picked.transform->parent));
+				if (picked.transform != nullptr)
+				{
+					savedParents.insert(pair<Transform*, Transform*>(picked.transform, picked.transform->parent));
+				}
 			}
 
 			objectWnd->SetObject(picked.object);
@@ -651,6 +654,10 @@ void EditorComponent::Update()
 						Material* material = picked.object->mesh->subsets[picked.subsetIndex].material;
 
 						materialWnd->SetMaterial(material);
+					}
+					if (picked.object->isArmatureDeformed())
+					{
+						picked.transform = picked.object->mesh->armature;
 					}
 				}
 				else
