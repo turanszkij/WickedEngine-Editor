@@ -130,8 +130,25 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    }
    file.close();
 
-   HWND hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-	   x, y, w, h, NULL, NULL, hInstance, NULL);
+   HWND hWnd = NULL;
+   //if (editor.fullscreen)
+   //{
+	   hWnd = CreateWindowEx(WS_EX_APPWINDOW,
+		   szWindowClass,
+		   szTitle,
+		   WS_POPUP,
+		   x, y, w, h,
+		   NULL,
+		   NULL,
+		   hInstance,
+		   NULL
+	   );
+   //}
+   //else
+   //{
+	  // hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+	  //  x, y, w, h, NULL, NULL, hInstance, NULL);
+   //}
 
    if (!hWnd)
    {

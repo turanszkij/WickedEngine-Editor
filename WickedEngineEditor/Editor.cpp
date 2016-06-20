@@ -115,15 +115,11 @@ void EditorLoadingScreen::Unload()
 wiTranslator* translator = nullptr;
 bool translator_active = false;
 list<wiRenderer::Picked> selected;
+map<Transform*,Transform*> savedParents;
 void BeginTranslate()
 {
-	//translatedEntity = entity;
 	translator_active = true;
 	translator->Clear();
-	//translator->Translate(translatedEntity->translation);
-	//translatedEntity_Parent = translatedEntity->parent;
-	//translatedEntity->detach();
-	//translatedEntity->attachTo(translator);
 
 	XMVECTOR centerV = XMVectorSet(0, 0, 0, 0);
 	float count = 0;
@@ -155,19 +151,17 @@ void EndTranslate()
 {
 	translator_active = false;
 	translator->detach();
-	//if (translatedEntity != nullptr)
-	//{
-	//	translatedEntity->detach();
-	//	translatedEntity->attachTo(translatedEntity_Parent);
-	//}
-	//translatedEntity = nullptr;
-	//translatedEntity_Parent = nullptr;
 
 	for (auto& x : selected)
 	{
 		if (x.transform != nullptr)
 		{
 			x.transform->detach();
+			map<Transform*,Transform*>::iterator it = savedParents.find(x.transform);
+			if (it != savedParents.end())
+			{
+				x.transform->attachTo(it->second);
+			}
 		}
 	}
 }
@@ -316,7 +310,7 @@ void EditorComponent::Load()
 
 
 	wiCheckBox* translatorCheckBox = new wiCheckBox("Translator: ");
-	translatorCheckBox->SetPos(XMFLOAT2(screenW - 440, 0));
+	translatorCheckBox->SetPos(XMFLOAT2(screenW - 495, 0));
 	translatorCheckBox->SetSize(XMFLOAT2(18, 18));
 	translatorCheckBox->OnClick([=](wiEventArgs args) {
 		if(!args.bValue)
@@ -326,7 +320,7 @@ void EditorComponent::Load()
 	GetGUI().AddWidget(translatorCheckBox);
 
 	wiCheckBox* isScalatorCheckBox = new wiCheckBox("S:");
-	isScalatorCheckBox->SetPos(XMFLOAT2(screenW - 520, 22));
+	isScalatorCheckBox->SetPos(XMFLOAT2(screenW - 575, 22));
 	isScalatorCheckBox->SetSize(XMFLOAT2(18, 18));
 	isScalatorCheckBox->OnClick([=](wiEventArgs args) {
 		translator->isScalator = args.bValue;
@@ -335,7 +329,7 @@ void EditorComponent::Load()
 	GetGUI().AddWidget(isScalatorCheckBox);
 
 	wiCheckBox* isRotatorCheckBox = new wiCheckBox("R:");
-	isRotatorCheckBox->SetPos(XMFLOAT2(screenW - 480, 22));
+	isRotatorCheckBox->SetPos(XMFLOAT2(screenW - 535, 22));
 	isRotatorCheckBox->SetSize(XMFLOAT2(18, 18));
 	isRotatorCheckBox->OnClick([=](wiEventArgs args) {
 		translator->isRotator = args.bValue;
@@ -344,7 +338,7 @@ void EditorComponent::Load()
 	GetGUI().AddWidget(isRotatorCheckBox);
 
 	wiCheckBox* isTranslatorCheckBox = new wiCheckBox("T:");
-	isTranslatorCheckBox->SetPos(XMFLOAT2(screenW - 440, 22));
+	isTranslatorCheckBox->SetPos(XMFLOAT2(screenW - 495, 22));
 	isTranslatorCheckBox->SetSize(XMFLOAT2(18, 18));
 	isTranslatorCheckBox->OnClick([=](wiEventArgs args) {
 		translator->isTranslator = args.bValue;
@@ -354,7 +348,7 @@ void EditorComponent::Load()
 
 
 	wiButton* saveButton = new wiButton("Save");
-	saveButton->SetPos(XMFLOAT2(screenW - 415, 0));
+	saveButton->SetPos(XMFLOAT2(screenW - 470, 0));
 	saveButton->SetSize(XMFLOAT2(100, 40));
 	saveButton->SetFontScaling(0.25f);
 	saveButton->SetColor(wiColor(0, 198, 101, 200), wiWidget::WIDGETSTATE::IDLE);
@@ -409,7 +403,7 @@ void EditorComponent::Load()
 
 
 	wiButton* modelButton = new wiButton("LoadModel");
-	modelButton->SetPos(XMFLOAT2(screenW - 310, 0));
+	modelButton->SetPos(XMFLOAT2(screenW - 365, 0));
 	modelButton->SetSize(XMFLOAT2(100, 40));
 	modelButton->SetFontScaling(0.25f);
 	modelButton->SetColor(wiColor(0, 89, 255, 200), wiWidget::WIDGETSTATE::IDLE);
@@ -462,7 +456,7 @@ void EditorComponent::Load()
 
 
 	wiButton* skyButton = new wiButton("LoadSky");
-	skyButton->SetPos(XMFLOAT2(screenW - 205, 0));
+	skyButton->SetPos(XMFLOAT2(screenW - 260, 0));
 	skyButton->SetSize(XMFLOAT2(100, 18));
 	skyButton->SetFontScaling(0.5f);
 	skyButton->SetColor(wiColor(0, 89, 255, 200), wiWidget::WIDGETSTATE::IDLE);
@@ -506,7 +500,7 @@ void EditorComponent::Load()
 
 
 	wiButton* colorGradingButton = new wiButton("ColorGrading");
-	colorGradingButton->SetPos(XMFLOAT2(screenW - 205, 22));
+	colorGradingButton->SetPos(XMFLOAT2(screenW - 260, 22));
 	colorGradingButton->SetSize(XMFLOAT2(100, 18));
 	colorGradingButton->SetFontScaling(0.45f);
 	colorGradingButton->SetColor(wiColor(0, 89, 255, 200), wiWidget::WIDGETSTATE::IDLE);
@@ -550,7 +544,7 @@ void EditorComponent::Load()
 
 
 	wiButton* clearButton = new wiButton("ClearWorld");
-	clearButton->SetPos(XMFLOAT2(screenW - 100, 0));
+	clearButton->SetPos(XMFLOAT2(screenW - 155, 0));
 	clearButton->SetSize(XMFLOAT2(100, 40));
 	clearButton->SetFontScaling(0.25f);
 	clearButton->SetColor(wiColor(190, 0, 0, 200), wiWidget::WIDGETSTATE::IDLE);
@@ -561,6 +555,18 @@ void EditorComponent::Load()
 		wiRenderer::CleanUpStaticTemp();
 	});
 	GetGUI().AddWidget(clearButton);
+
+
+	wiButton* exitButton = new wiButton("X");
+	exitButton->SetPos(XMFLOAT2(screenW - 50, 0));
+	exitButton->SetSize(XMFLOAT2(50, 40));
+	exitButton->SetFontScaling(0.25f);
+	exitButton->SetColor(wiColor(190, 0, 0, 200), wiWidget::WIDGETSTATE::IDLE);
+	exitButton->SetColor(wiColor(255, 0, 0, 255), wiWidget::WIDGETSTATE::FOCUS);
+	exitButton->OnClick([](wiEventArgs args) {
+		exit(0);
+	});
+	GetGUI().AddWidget(exitButton);
 
 	// ...
 }
@@ -613,11 +619,13 @@ void EditorComponent::Update()
 				if (it==selected.end())
 				{
 					selected.push_back(picked);
+					savedParents.insert(pair<Transform*, Transform*>(picked.transform, picked.transform->parent));
 				}
 				else
 				{
 					EndTranslate();
 					selected.erase(it);
+					savedParents.erase(it->transform);
 				}
 			}
 			else
@@ -625,6 +633,8 @@ void EditorComponent::Update()
 				EndTranslate();
 				selected.clear();
 				selected.push_back(picked);
+				savedParents.clear();
+				savedParents.insert(pair<Transform*, Transform*>(picked.transform, picked.transform->parent));
 			}
 
 			objectWnd->SetObject(picked.object);
@@ -642,7 +652,6 @@ void EditorComponent::Update()
 
 						materialWnd->SetMaterial(material);
 					}
-					BeginTranslate();
 				}
 				else
 				{
@@ -652,14 +661,14 @@ void EditorComponent::Update()
 
 				if (picked.light != nullptr)
 				{
-					BeginTranslate();
 				}
 				lightWnd->SetLight(picked.light);
 				if (picked.decal != nullptr)
 				{
-					BeginTranslate();
 				}
 				decalWnd->SetDecal(picked.decal);
+
+				BeginTranslate();
 
 			}
 			else

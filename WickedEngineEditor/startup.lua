@@ -28,6 +28,8 @@
 -- 	end
 -- end)
 
+main.SetResolutionDisplay(true);
+
 runProcess(function()
 	while true do
 		
