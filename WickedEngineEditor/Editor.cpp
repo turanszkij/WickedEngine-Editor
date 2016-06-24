@@ -116,6 +116,7 @@ wiTranslator* translator = nullptr;
 bool translator_active = false;
 list<wiRenderer::Picked> selected;
 map<Transform*,Transform*> savedParents;
+wiRenderer::Picked hovered;
 void BeginTranslate()
 {
 	translator_active = true;
@@ -602,9 +603,11 @@ void EditorComponent::Update()
 			originalMouse = wiInputManager::GetInstance()->getpointer();
 		}
 
+
+		hovered = wiRenderer::Pick((long)currentMouse.x, (long)currentMouse.y, rendererWnd->GetPickType());
 		if (wiInputManager::GetInstance()->press(VK_RBUTTON))
 		{
-			wiRenderer::Picked picked = wiRenderer::Pick((long)currentMouse.x, (long)currentMouse.y, rendererWnd->GetPickType());
+			wiRenderer::Picked picked = hovered;
 
 			if (!selected.empty() && wiInputManager::GetInstance()->down(VK_LSHIFT))
 			{
@@ -696,6 +699,27 @@ void EditorComponent::Update()
 }
 void EditorComponent::Render()
 {
+	// hover box
+	{
+		if (hovered.object != nullptr)
+		{
+			XMFLOAT4X4 hoverBox;
+			XMStoreFloat4x4(&hoverBox, hovered.object->bounds.getAsBoxMatrix());
+			wiRenderer::AddRenderableBox(hoverBox, XMFLOAT4(0.5f, 0.5f, 0.5f, 0.5f));
+		}
+		if (hovered.light != nullptr)
+		{
+			XMFLOAT4X4 hoverBox;
+			XMStoreFloat4x4(&hoverBox, hovered.light->bounds.getAsBoxMatrix());
+			wiRenderer::AddRenderableBox(hoverBox, XMFLOAT4(0.5f, 0.5f, 0, 0.5f));
+		}
+		if (hovered.decal != nullptr)
+		{
+			wiRenderer::AddRenderableBox(hovered.decal->world, XMFLOAT4(0.5f, 0, 0.5f, 0.5f));
+		}
+
+	}
+
 	if (!selected.empty())
 	{
 		if (translator_active)
