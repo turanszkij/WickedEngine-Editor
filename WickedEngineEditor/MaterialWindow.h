@@ -22,6 +22,7 @@ public:
 	wiWindow*	materialWindow;
 	wiLabel*	materialLabel;
 	wiCheckBox* waterCheckBox;
+	wiCheckBox* planarReflCheckBox;
 	wiSlider*	normalMapSlider;
 	wiSlider*	roughnessSlider;
 	wiSlider*	reflectanceSlider;

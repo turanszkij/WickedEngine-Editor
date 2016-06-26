@@ -569,7 +569,11 @@ void EditorComponent::Load()
 	});
 	GetGUI().AddWidget(exitButton);
 
-	// ...
+	
+
+	pointLightTex = *(Texture2D*)Content.add("Resource/pointlight.dds");
+	spotLightTex = *(Texture2D*)Content.add("Resource/spotlight.dds");
+	dirLightTex = *(Texture2D*)Content.add("Resource/directional_light.dds");
 }
 void EditorComponent::Start()
 {
@@ -754,6 +758,54 @@ void EditorComponent::Render()
 	}
 
 	__super::Render();
+}
+void EditorComponent::Compose()
+{
+	__super::Compose();
+
+	if (rendererWnd->GetPickType() & PICK_LIGHT)
+	{
+		for (auto& x : wiRenderer::GetScene().models)
+		{
+			for (auto& y : x->lights)
+			{
+				float dist = wiMath::Distance(y->translation, wiRenderer::getCamera()->translation) * 0.1f;
+
+				wiImageEffects fx;
+				fx.pos = y->translation;
+				fx.siz = XMFLOAT2(dist, dist);
+				fx.typeFlag = ImageType::WORLD;
+				fx.pivot = XMFLOAT2(0.5f, 0.5f);
+				fx.col = XMFLOAT4(1, 1, 1, 0.5f);
+
+				if (hovered.light == y)
+				{
+					fx.col = XMFLOAT4(1, 1, 1, 1);
+				}
+				for (auto& picked : selected)
+				{
+					if (picked.light == y)
+					{
+						fx.col = XMFLOAT4(1, 1, 0, 1);
+						break;
+					}
+				}
+
+				switch (y->type)
+				{
+				case Light::POINT:
+					wiImage::Draw(&pointLightTex, fx, GRAPHICSTHREAD_IMMEDIATE);
+					break;
+				case Light::SPOT:
+					wiImage::Draw(&spotLightTex, fx, GRAPHICSTHREAD_IMMEDIATE);
+					break;
+				case Light::DIRECTIONAL:
+					wiImage::Draw(&dirLightTex, fx, GRAPHICSTHREAD_IMMEDIATE);
+					break;
+				}
+			}
+		}
+	}
 }
 void EditorComponent::Unload()
 {

@@ -25,6 +25,8 @@ public:
 class Editor;
 class EditorComponent : public DeferredRenderableComponent
 {
+private:
+	wiGraphicsTypes::Texture2D pointLightTex, spotLightTex, dirLightTex;
 public:
 	MaterialWindow*			materialWnd;
 	PostprocessWindow*		postprocessWnd;
@@ -45,6 +47,7 @@ public:
 	void Start() override;
 	void Update() override;
 	void Render() override;
+	void Compose() override;
 	void Unload() override;
 };
 

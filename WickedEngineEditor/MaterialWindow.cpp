@@ -22,16 +22,25 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 	materialLabel->SetText("");
 	materialWindow->AddWidget(materialLabel);
 
+	float x = 400, y = 0;
+
 	waterCheckBox = new wiCheckBox("Water: ");
-	waterCheckBox->SetPos(XMFLOAT2(470, 30));
+	waterCheckBox->SetPos(XMFLOAT2(470, y += 30));
 	waterCheckBox->OnClick([&](wiEventArgs args) {
 		material->water = args.bValue;
 	});
 	materialWindow->AddWidget(waterCheckBox);
 
+	planarReflCheckBox = new wiCheckBox("Planar Reflections: ");
+	planarReflCheckBox->SetPos(XMFLOAT2(470, y += 30));
+	planarReflCheckBox->OnClick([&](wiEventArgs args) {
+		material->planar_reflections = args.bValue;
+	});
+	materialWindow->AddWidget(planarReflCheckBox);
+
 	normalMapSlider = new wiSlider(0, 4, 1, 4000, "Normalmap: ");
 	normalMapSlider->SetSize(XMFLOAT2(100, 30));
-	normalMapSlider->SetPos(XMFLOAT2(400, 60));
+	normalMapSlider->SetPos(XMFLOAT2(x, y += 30));
 	normalMapSlider->OnSlide([&](wiEventArgs args) {
 		material->normalMapStrength = args.fValue;
 	});
@@ -39,7 +48,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 
 	roughnessSlider = new wiSlider(0, 1, 0.5f, 1000, "Roughness: ");
 	roughnessSlider->SetSize(XMFLOAT2(100, 30));
-	roughnessSlider->SetPos(XMFLOAT2(400, 100));
+	roughnessSlider->SetPos(XMFLOAT2(x, y += 30));
 	roughnessSlider->OnSlide([&](wiEventArgs args) {
 		material->roughness = args.fValue;
 	});
@@ -47,7 +56,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 
 	reflectanceSlider = new wiSlider(0, 1, 0.5f, 1000, "Reflectance: ");
 	reflectanceSlider->SetSize(XMFLOAT2(100, 30));
-	reflectanceSlider->SetPos(XMFLOAT2(400, 140));
+	reflectanceSlider->SetPos(XMFLOAT2(x, y += 30));
 	reflectanceSlider->OnSlide([&](wiEventArgs args) {
 		material->reflectance = args.fValue;
 	});
@@ -55,7 +64,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 
 	metalnessSlider = new wiSlider(0, 1, 0.0f, 1000, "Metalness: ");
 	metalnessSlider->SetSize(XMFLOAT2(100, 30));
-	metalnessSlider->SetPos(XMFLOAT2(400, 180));
+	metalnessSlider->SetPos(XMFLOAT2(x, y += 30));
 	metalnessSlider->OnSlide([&](wiEventArgs args) {
 		material->metalness = args.fValue;
 	});
@@ -63,7 +72,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 
 	alphaSlider = new wiSlider(0, 1, 1.0f, 1000, "Alpha: ");
 	alphaSlider->SetSize(XMFLOAT2(100, 30));
-	alphaSlider->SetPos(XMFLOAT2(400, 220));
+	alphaSlider->SetPos(XMFLOAT2(x, y += 30));
 	alphaSlider->OnSlide([&](wiEventArgs args) {
 		material->alpha = args.fValue;
 	});
@@ -71,7 +80,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 
 	refractionIndexSlider = new wiSlider(0, 1.0f, 0.02f, 1000, "Refraction Index: ");
 	refractionIndexSlider->SetSize(XMFLOAT2(100, 30));
-	refractionIndexSlider->SetPos(XMFLOAT2(400, 260));
+	refractionIndexSlider->SetPos(XMFLOAT2(x, y += 30));
 	refractionIndexSlider->OnSlide([&](wiEventArgs args) {
 		material->refractionIndex = args.fValue;
 	});
@@ -79,7 +88,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 
 	emissiveSlider = new wiSlider(0, 1, 0.0f, 1000, "Emissive: ");
 	emissiveSlider->SetSize(XMFLOAT2(100, 30));
-	emissiveSlider->SetPos(XMFLOAT2(400, 300));
+	emissiveSlider->SetPos(XMFLOAT2(x, y += 30));
 	emissiveSlider->OnSlide([&](wiEventArgs args) {
 		material->emissive = args.fValue;
 	});
@@ -87,7 +96,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 
 	sssSlider = new wiSlider(0, 1, 0.0f, 1000, "Subsurface Scattering: ");
 	sssSlider->SetSize(XMFLOAT2(100, 30));
-	sssSlider->SetPos(XMFLOAT2(400, 340));
+	sssSlider->SetPos(XMFLOAT2(x, y += 30));
 	sssSlider->OnSlide([&](wiEventArgs args) {
 		material->subsurfaceScattering = args.fValue;
 	});
@@ -107,6 +116,7 @@ MaterialWindow::~MaterialWindow()
 	SAFE_DELETE(materialWindow);
 	SAFE_DELETE(materialLabel);
 	SAFE_DELETE(waterCheckBox);
+	SAFE_DELETE(planarReflCheckBox);
 	SAFE_DELETE(normalMapSlider);
 	SAFE_DELETE(roughnessSlider);
 	SAFE_DELETE(reflectanceSlider);
@@ -126,6 +136,7 @@ void MaterialWindow::SetMaterial(Material* mat)
 	{
 		materialLabel->SetText(material->name);
 		waterCheckBox->SetCheck(material->water);
+		planarReflCheckBox->SetCheck(material->planar_reflections);
 		normalMapSlider->SetValue(material->normalMapStrength);
 		roughnessSlider->SetValue(material->roughness);
 		reflectanceSlider->SetValue(material->reflectance);
