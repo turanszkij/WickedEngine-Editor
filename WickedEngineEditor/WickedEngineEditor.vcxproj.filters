@@ -16,6 +16,9 @@
     <Filter Include="fonts">
       <UniqueIdentifier>{f93c7868-4453-4ef8-94c9-db6da54fddd8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource">
+      <UniqueIdentifier>{301fff70-6331-4cf4-8db0-1023546019f9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -114,6 +117,15 @@
     </Image>
     <Image Include="fonts\basic.dds">
       <Filter>fonts</Filter>
+    </Image>
+    <Image Include="Resource\spotlight.dds">
+      <Filter>Resource</Filter>
+    </Image>
+    <Image Include="Resource\directional_light.dds">
+      <Filter>Resource</Filter>
+    </Image>
+    <Image Include="Resource\pointlight.dds">
+      <Filter>Resource</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

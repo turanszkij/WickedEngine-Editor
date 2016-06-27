@@ -198,6 +198,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="fonts\basic.dds" />
+    <Image Include="Resource\directional_light.dds" />
+    <Image Include="Resource\pointlight.dds" />
+    <Image Include="Resource\spotlight.dds" />
     <Image Include="small.ico" />
     <Image Include="WickedEngineEditor.ico" />
   </ItemGroup>
