@@ -114,7 +114,7 @@ void EditorLoadingScreen::Unload()
 
 wiTranslator* translator = nullptr;
 bool translator_active = false;
-list<wiRenderer::Picked> selected;
+list<wiRenderer::Picked*> selected;
 map<Transform*,Transform*> savedParents;
 wiRenderer::Picked hovered;
 void BeginTranslate()
@@ -126,9 +126,9 @@ void BeginTranslate()
 	float count = 0;
 	for (auto& x : selected)
 	{
-		if (x.transform != nullptr)
+		if (x->transform != nullptr)
 		{
-			centerV = XMVectorAdd(centerV, XMLoadFloat3(&x.transform->translation));
+			centerV = XMVectorAdd(centerV, XMLoadFloat3(&x->transform->translation));
 			count += 1.0f;
 		}
 	}
@@ -140,10 +140,10 @@ void BeginTranslate()
 		translator->Translate(center);
 		for (auto& x : selected)
 		{
-			if (x.transform != nullptr)
+			if (x->transform != nullptr)
 			{
-				x.transform->detach();
-				x.transform->attachTo(translator);
+				x->transform->detach();
+				x->transform->attachTo(translator);
 			}
 		}
 	}
@@ -155,16 +155,25 @@ void EndTranslate()
 
 	for (auto& x : selected)
 	{
-		if (x.transform != nullptr)
+		if (x->transform != nullptr)
 		{
-			x.transform->detach();
-			map<Transform*,Transform*>::iterator it = savedParents.find(x.transform);
+			x->transform->detach();
+			map<Transform*,Transform*>::iterator it = savedParents.find(x->transform);
 			if (it != savedParents.end())
 			{
-				x.transform->attachTo(it->second);
+				x->transform->attachTo(it->second);
 			}
 		}
 	}
+}
+void ClearSelected()
+{
+	for (auto& x : selected)
+	{
+		SAFE_DELETE(x);
+	}
+	selected.clear();
+	savedParents.clear();
 }
 
 
@@ -611,11 +620,11 @@ void EditorComponent::Update()
 		hovered = wiRenderer::Pick((long)currentMouse.x, (long)currentMouse.y, rendererWnd->GetPickType());
 		if (wiInputManager::GetInstance()->press(VK_RBUTTON))
 		{
-			wiRenderer::Picked picked = hovered;
+			wiRenderer::Picked* picked = new wiRenderer::Picked(hovered);
 
 			if (!selected.empty() && wiInputManager::GetInstance()->down(VK_LSHIFT))
 			{
-				list<wiRenderer::Picked>::iterator it = selected.begin();
+				list<wiRenderer::Picked*>::iterator it = selected.begin();
 				for (; it != selected.end(); ++it)
 				{
 					if ((*it) == picked)
@@ -626,45 +635,46 @@ void EditorComponent::Update()
 				if (it==selected.end())
 				{
 					selected.push_back(picked);
-					savedParents.insert(pair<Transform*, Transform*>(picked.transform, picked.transform->parent));
+					savedParents.insert(pair<Transform*, Transform*>(picked->transform, picked->transform->parent));
 				}
 				else
 				{
 					EndTranslate();
 					selected.erase(it);
-					savedParents.erase(it->transform);
+					savedParents.erase((*it)->transform);
 				}
 			}
 			else
 			{
 				EndTranslate();
-				selected.clear();
+				ClearSelected();
 				selected.push_back(picked);
-				savedParents.clear();
-				if (picked.transform != nullptr)
+				if (picked->transform != nullptr)
 				{
-					savedParents.insert(pair<Transform*, Transform*>(picked.transform, picked.transform->parent));
+					savedParents.insert(pair<Transform*, Transform*>(picked->transform, picked->transform->parent));
 				}
 			}
 
-			objectWnd->SetObject(picked.object);
+			objectWnd->SetObject(picked->object);
 
-			if (picked.transform != nullptr)
+			if (picked->transform != nullptr)
 			{
 				EndTranslate();
 
-				if (picked.object != nullptr)
+				if (picked->object != nullptr)
 				{
-					meshWnd->SetMesh(picked.object->mesh);
-					if (picked.subsetIndex < (int)picked.object->mesh->subsets.size())
+					meshWnd->SetMesh(picked->object->mesh);
+					if (picked->subsetIndex < (int)picked->object->mesh->subsets.size())
 					{
-						Material* material = picked.object->mesh->subsets[picked.subsetIndex].material;
+						Material* material = picked->object->mesh->subsets[picked->subsetIndex].material;
 
 						materialWnd->SetMaterial(material);
 					}
-					if (picked.object->isArmatureDeformed())
+					if (picked->object->isArmatureDeformed())
 					{
-						picked.transform = picked.object->mesh->armature;
+						savedParents.erase(picked->object);
+						picked->transform = picked->object->mesh->armature;
+						savedParents.insert(pair<Transform*, Transform*>(picked->transform, picked->transform->parent));
 					}
 				}
 				else
@@ -673,14 +683,14 @@ void EditorComponent::Update()
 					materialWnd->SetMaterial(nullptr);
 				}
 
-				if (picked.light != nullptr)
+				if (picked->light != nullptr)
 				{
 				}
-				lightWnd->SetLight(picked.light);
-				if (picked.decal != nullptr)
+				lightWnd->SetLight(picked->light);
+				if (picked->decal != nullptr)
 				{
 				}
-				decalWnd->SetDecal(picked.decal);
+				decalWnd->SetDecal(picked->decal);
 
 				BeginTranslate();
 
@@ -691,7 +701,7 @@ void EditorComponent::Update()
 				materialWnd->SetMaterial(nullptr);
 
 				EndTranslate();
-				selected.clear();
+				ClearSelected();
 			}
 		}
 
@@ -734,20 +744,20 @@ void EditorComponent::Render()
 		AABB selectedAABB = AABB(XMFLOAT3(FLOAT32_MAX, FLOAT32_MAX, FLOAT32_MAX),XMFLOAT3(-FLOAT32_MAX, -FLOAT32_MAX, -FLOAT32_MAX));
 		for (auto& picked : selected)
 		{
-			if (picked.object != nullptr)
+			if (picked->object != nullptr)
 			{
-				selectedAABB = AABB::Merge(selectedAABB, picked.object->bounds);
+				selectedAABB = AABB::Merge(selectedAABB, picked->object->bounds);
 			}
-			if (picked.light != nullptr)
+			if (picked->light != nullptr)
 			{
-				selectedAABB = AABB::Merge(selectedAABB, picked.light->bounds);
+				selectedAABB = AABB::Merge(selectedAABB, picked->light->bounds);
 			}
-			if (picked.decal != nullptr)
+			if (picked->decal != nullptr)
 			{
-				selectedAABB = AABB::Merge(selectedAABB, picked.decal->bounds);
+				selectedAABB = AABB::Merge(selectedAABB, picked->decal->bounds);
 
 				XMFLOAT4X4 selectionBox;
-				selectionBox = picked.decal->world;
+				selectionBox = picked->decal->world;
 				wiRenderer::AddRenderableBox(selectionBox, XMFLOAT4(1, 0, 1, 1));
 			}
 		}
@@ -784,7 +794,7 @@ void EditorComponent::Compose()
 				}
 				for (auto& picked : selected)
 				{
-					if (picked.light == y)
+					if (picked->light == y)
 					{
 						fx.col = XMFLOAT4(1, 1, 0, 1);
 						break;
