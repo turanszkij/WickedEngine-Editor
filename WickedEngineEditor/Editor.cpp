@@ -592,29 +592,63 @@ void EditorComponent::Update()
 {
 	if (!wiBackLog::isActive())
 	{
-
-		float speed = (wiInputManager::GetInstance()->down(VK_SHIFT) ? 1.0f : 0.1f);
-		if (wiInputManager::GetInstance()->down('A')) wiRenderer::getCamera()->Move(XMVectorSet(-speed, 0, 0, 0));
-		if (wiInputManager::GetInstance()->down('D')) wiRenderer::getCamera()->Move(XMVectorSet(speed, 0, 0, 0));
-		if (wiInputManager::GetInstance()->down('W')) wiRenderer::getCamera()->Move(XMVectorSet(0, 0, speed, 0));
-		if (wiInputManager::GetInstance()->down('S')) wiRenderer::getCamera()->Move(XMVectorSet(0, 0, -speed, 0));
-		if (wiInputManager::GetInstance()->down(VK_SPACE)) wiRenderer::getCamera()->Move(XMVectorSet(0, speed, 0, 0));
-		if (wiInputManager::GetInstance()->down(VK_CONTROL)) wiRenderer::getCamera()->Move(XMVectorSet(0, -speed, 0, 0));
-
 		static XMFLOAT4 originalMouse = XMFLOAT4(0, 0, 0, 0);
 		XMFLOAT4 currentMouse = wiInputManager::GetInstance()->getpointer();
+		float xDif = 0, yDif = 0;
 		if (wiInputManager::GetInstance()->down(VK_MBUTTON))
 		{
-			float xDif = currentMouse.x - originalMouse.x;
-			float yDif = currentMouse.y - originalMouse.y;
-			wiRenderer::getCamera()->RotateRollPitchYaw(XMFLOAT3(0, 0.1f*xDif*(1.0f / 60.0f), 0));
-			wiRenderer::getCamera()->RotateRollPitchYaw(XMFLOAT3(0.1f*yDif*(1.0f / 60.0f), 0, 0));
+			xDif = currentMouse.x - originalMouse.x;
+			yDif = currentMouse.y - originalMouse.y;
+			xDif = 0.1f*xDif*(1.0f / 60.0f);
+			yDif = 0.1f*yDif*(1.0f / 60.0f);
 			wiInputManager::GetInstance()->setpointer(originalMouse);
 		}
 		else
 		{
 			originalMouse = wiInputManager::GetInstance()->getpointer();
 		}
+
+		Camera* cam = wiRenderer::getCamera();
+
+		if (cameraWnd->fpscamera)
+		{
+			// FPS Camera
+			cam->detach();
+			float speed = (wiInputManager::GetInstance()->down(VK_SHIFT) ? 1.0f : 0.1f);
+			if (wiInputManager::GetInstance()->down('A')) cam->Move(XMVectorSet(-speed, 0, 0, 0));
+			if (wiInputManager::GetInstance()->down('D')) cam->Move(XMVectorSet(speed, 0, 0, 0));
+			if (wiInputManager::GetInstance()->down('W')) cam->Move(XMVectorSet(0, 0, speed, 0));
+			if (wiInputManager::GetInstance()->down('S')) cam->Move(XMVectorSet(0, 0, -speed, 0));
+			if (wiInputManager::GetInstance()->down(VK_SPACE)) cam->Move(XMVectorSet(0, speed, 0, 0));
+			if (wiInputManager::GetInstance()->down(VK_CONTROL)) cam->Move(XMVectorSet(0, -speed, 0, 0));
+			cam->RotateRollPitchYaw(XMFLOAT3(0, xDif, 0));
+			cam->RotateRollPitchYaw(XMFLOAT3(yDif, 0, 0));
+		}
+		else
+		{
+			// Orbital Camera
+			if (cam->parent == nullptr)
+			{
+				cam->attachTo(cameraWnd->orbitalCamTarget);
+			}
+			if (wiInputManager::GetInstance()->down(VK_LSHIFT))
+			{
+				XMVECTOR V = XMVectorAdd(cam->GetRight() * xDif, cam->GetUp() * yDif) * 6;
+				XMFLOAT3 vec;
+				XMStoreFloat3(&vec, V);
+				cameraWnd->orbitalCamTarget->Translate(vec);
+			}
+			else if (wiInputManager::GetInstance()->down(VK_LMENU))
+			{
+				cam->Translate(XMFLOAT3(0, 0, yDif * 2));
+			}
+			else
+			{
+				cameraWnd->orbitalCamTarget->RotateRollPitchYaw(XMFLOAT3(0, xDif, 0));
+				cameraWnd->orbitalCamTarget->RotateRollPitchYaw(XMFLOAT3(yDif, 0, 0));
+			}
+		}
+
 
 
 		hovered = wiRenderer::Pick((long)currentMouse.x, (long)currentMouse.y, rendererWnd->GetPickType());

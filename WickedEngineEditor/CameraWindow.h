@@ -13,6 +13,9 @@ public:
 	CameraWindow(wiGUI* gui);
 	~CameraWindow();
 
+	bool fpscamera; 
+	Transform* orbitalCamTarget;
+
 	wiGUI* GUI;
 
 	wiWindow* cameraWindow;
@@ -20,5 +23,6 @@ public:
 	wiSlider* nearPlaneSlider;
 	wiSlider* fovSlider;
 	wiButton* resetButton;
+	wiCheckBox* fpsCheckBox;
 };
 

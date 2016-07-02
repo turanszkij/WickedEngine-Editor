@@ -14,6 +14,8 @@ CameraWindow::CameraWindow(wiGUI* gui) :GUI(gui)
 	float screenW = (float)wiRenderer::GetDevice()->GetScreenWidth();
 	float screenH = (float)wiRenderer::GetDevice()->GetScreenHeight();
 
+	fpscamera = false;
+	orbitalCamTarget = new Transform;
 
 	cameraWindow = new wiWindow(GUI, "Camera Window");
 	cameraWindow->SetSize(XMFLOAT2(400, 300));
@@ -54,9 +56,17 @@ CameraWindow::CameraWindow(wiGUI* gui) :GUI(gui)
 	resetButton->SetSize(XMFLOAT2(140, 30));
 	resetButton->SetPos(XMFLOAT2(x, y += inc));
 	resetButton->OnClick([&](wiEventArgs args) {
+		orbitalCamTarget->Clear();
 		ResetCam();
 	});
 	cameraWindow->AddWidget(resetButton);
+
+	fpsCheckBox = new wiCheckBox("FPS Camera: ");
+	fpsCheckBox->SetPos(XMFLOAT2(x, y += inc));
+	fpsCheckBox->OnClick([&](wiEventArgs args) {
+		fpscamera = args.bValue;
+	});
+	cameraWindow->AddWidget(fpsCheckBox);
 
 
 
@@ -69,6 +79,8 @@ CameraWindow::CameraWindow(wiGUI* gui) :GUI(gui)
 
 CameraWindow::~CameraWindow()
 {
+	SAFE_DELETE(orbitalCamTarget);
+
 	SAFE_DELETE(cameraWindow);
 	SAFE_DELETE(farPlaneSlider);
 	SAFE_DELETE(nearPlaneSlider);
