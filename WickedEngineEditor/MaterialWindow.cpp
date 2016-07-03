@@ -102,6 +102,14 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 	});
 	materialWindow->AddWidget(sssSlider);
 
+	pomSlider = new wiSlider(0, 0.1f, 0.0f, 1000, "Parallax Occlusion Mapping: ");
+	pomSlider->SetSize(XMFLOAT2(100, 30));
+	pomSlider->SetPos(XMFLOAT2(x, y += 30));
+	pomSlider->OnSlide([&](wiEventArgs args) {
+		material->parallaxOcclusionMapping = args.fValue;
+	});
+	materialWindow->AddWidget(pomSlider);
+
 
 
 
@@ -125,6 +133,7 @@ MaterialWindow::~MaterialWindow()
 	SAFE_DELETE(refractionIndexSlider);
 	SAFE_DELETE(emissiveSlider);
 	SAFE_DELETE(sssSlider);
+	SAFE_DELETE(pomSlider);
 }
 
 
@@ -145,6 +154,7 @@ void MaterialWindow::SetMaterial(Material* mat)
 		refractionIndexSlider->SetValue(material->refractionIndex);
 		emissiveSlider->SetValue(material->emissive);
 		sssSlider->SetValue(material->subsurfaceScattering);
+		pomSlider->SetValue(material->parallaxOcclusionMapping);
 		materialWindow->SetEnabled(true);
 	}
 	else

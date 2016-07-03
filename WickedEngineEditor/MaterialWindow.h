@@ -31,5 +31,6 @@ public:
 	wiSlider*	refractionIndexSlider;
 	wiSlider*	emissiveSlider;
 	wiSlider*	sssSlider;
+	wiSlider*	pomSlider;
 };
 
