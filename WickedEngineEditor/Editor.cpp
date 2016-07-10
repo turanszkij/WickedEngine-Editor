@@ -176,6 +176,13 @@ void ClearSelected()
 	savedParents.clear();
 }
 
+wiArchive *clipboard_write = nullptr, *clipboard_read = nullptr;
+enum ClipboardItemType
+{
+	CLIPBOARD_MODEL,
+	CLIPBOARD_EMPTY
+};
+
 
 void EditorComponent::Initialize()
 {
@@ -203,7 +210,6 @@ void EditorComponent::Initialize()
 void EditorComponent::Load()
 {
 	__super::Load();
-
 
 	translator = new wiTranslator;
 	translator->enabled = false;
@@ -392,16 +398,24 @@ void EditorComponent::Load()
 			wiArchive archive(fileName, false);
 			if (archive.IsOpen())
 			{
+				Model* fullModel = new Model;
 				auto& children = wiRenderer::GetScene().GetWorldNode()->children;
 				for(auto& x : children)
 				{
 					Model* model = dynamic_cast<Model*>(x);
 					if (model != nullptr)
 					{
-						model->Serialize(archive);
-						break;
+						fullModel->Add(model);
 					}
 				}
+				fullModel->Serialize(archive);
+
+				fullModel->objects.clear();
+				fullModel->lights.clear();
+				fullModel->decals.clear();
+				fullModel->meshes.clear();
+				fullModel->materials.clear();
+				SAFE_DELETE(fullModel);
 			}
 			else
 			{
@@ -638,9 +652,9 @@ void EditorComponent::Update()
 				XMStoreFloat3(&vec, V);
 				cameraWnd->orbitalCamTarget->Translate(vec);
 			}
-			else if (wiInputManager::GetInstance()->down(VK_LMENU))
+			else if (wiInputManager::GetInstance()->down(VK_LCONTROL))
 			{
-				cam->Translate(XMFLOAT3(0, 0, yDif * 2));
+				cam->Translate(XMFLOAT3(0, 0, -yDif * 2));
 			}
 			else
 			{
@@ -650,7 +664,7 @@ void EditorComponent::Update()
 		}
 
 
-
+		// Select...
 		hovered = wiRenderer::Pick((long)currentMouse.x, (long)currentMouse.y, rendererWnd->GetPickType());
 		if (wiInputManager::GetInstance()->press(VK_RBUTTON))
 		{
@@ -666,7 +680,7 @@ void EditorComponent::Update()
 						break;
 					}
 				}
-				if (it==selected.end())
+				if (it==selected.end() && picked->transform != nullptr)
 				{
 					selected.push_back(picked);
 					savedParents.insert(pair<Transform*, Transform*>(picked->transform, picked->transform->parent));
@@ -736,6 +750,90 @@ void EditorComponent::Update()
 
 				EndTranslate();
 				ClearSelected();
+			}
+		}
+
+		// Delete
+		if (wiInputManager::GetInstance()->press(VK_DELETE))
+		{
+			for (auto& x : selected)
+			{
+				if (x->object != nullptr)
+				{
+					wiRenderer::Remove(x->object);
+					SAFE_DELETE(x->object);
+					x->transform = nullptr;
+				}
+				if (x->light != nullptr)
+				{
+					wiRenderer::Remove(x->light);
+					SAFE_DELETE(x->light);
+					x->transform = nullptr;
+				}
+				if (x->decal != nullptr)
+				{
+					wiRenderer::Remove(x->decal);
+					SAFE_DELETE(x->decal);
+					x->transform = nullptr;
+				}
+				if (x->transform != nullptr)
+				{
+					EnvironmentProbe* envProbe = dynamic_cast<EnvironmentProbe*>(x->transform);
+					if (envProbe != nullptr)
+					{
+						wiRenderer::Remove(envProbe);
+					}
+				}
+			}
+			ClearSelected();
+		}
+		// Copy/Paste...
+		if (wiInputManager::GetInstance()->down(VK_CONTROL))
+		{
+			// Copy
+			if (wiInputManager::GetInstance()->press('C'))
+			{
+				clipboard_write = new wiArchive("__temp", false);
+				*clipboard_write << CLIPBOARD_MODEL;
+				Model* model = new Model;
+				for (auto& x : selected)
+				{
+					model->Add(x->object);
+					model->Add(x->light);
+					model->Add(x->decal);
+				}
+				model->Serialize(*clipboard_write);
+				SAFE_DELETE(clipboard_write);
+
+				model->objects.clear();
+				model->lights.clear();
+				model->decals.clear();
+				model->meshes.clear();
+				model->materials.clear();
+				SAFE_DELETE(model);
+			}
+			// Paste
+			if (wiInputManager::GetInstance()->press('V'))
+			{
+				clipboard_read = new wiArchive("__temp", true);
+				int tmp;
+				*clipboard_read >> tmp;
+				ClipboardItemType type = (ClipboardItemType)tmp;
+				switch (type)
+				{
+				case CLIPBOARD_MODEL:
+				{
+					Model* model = new Model;
+					model->Serialize(*clipboard_read);
+					wiRenderer::AddModel(model);
+				}
+				break;
+				case CLIPBOARD_EMPTY:
+					break;
+				default:
+					break;
+				}
+				SAFE_DELETE(clipboard_read);
 			}
 		}
 
