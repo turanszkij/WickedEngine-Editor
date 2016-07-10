@@ -16,6 +16,9 @@
 #include <Commdlg.h> // openfile
 #include <WinBase.h>
 
+// This should be written into any archive operation for future bacwards compatibility!
+int __editorVersion = 0;
+
 using namespace wiGraphicsTypes;
 
 
@@ -176,12 +179,28 @@ void ClearSelected()
 	savedParents.clear();
 }
 
+
 wiArchive *clipboard_write = nullptr, *clipboard_read = nullptr;
 enum ClipboardItemType
 {
 	CLIPBOARD_MODEL,
 	CLIPBOARD_EMPTY
 };
+
+wiArchive* history = nullptr;
+int historyCount = 0;
+int historyPos = -1;
+enum HistoryOperationType
+{
+	HISTORYOP_SELECTION,
+	HISTORYOP_TRANSLATOR,
+	HISTORYOP_DELETE,
+	HISTORYOP_PASTE,
+	HISTORYOP_NONE
+};
+void ResetHistory();
+string AdvanceHistory();
+void ConsumeHistoryOperation(bool undo);
 
 
 void EditorComponent::Initialize()
@@ -416,6 +435,7 @@ void EditorComponent::Load()
 				fullModel->meshes.clear();
 				fullModel->materials.clear();
 				SAFE_DELETE(fullModel);
+				ResetHistory();
 			}
 			else
 			{
@@ -473,6 +493,7 @@ void EditorComponent::Load()
 					worldWnd->UpdateFromRenderer();
 				});
 				main->activateComponent(loader);
+				ResetHistory();
 			}
 		}).detach();
 	});
@@ -668,6 +689,11 @@ void EditorComponent::Update()
 		hovered = wiRenderer::Pick((long)currentMouse.x, (long)currentMouse.y, rendererWnd->GetPickType());
 		if (wiInputManager::GetInstance()->press(VK_RBUTTON))
 		{
+			history = new wiArchive(AdvanceHistory(), false);
+			*history << __editorVersion;
+			*history << (int)HISTORYOP_SELECTION;
+
+
 			wiRenderer::Picked* picked = new wiRenderer::Picked(hovered);
 
 			if (!selected.empty() && wiInputManager::GetInstance()->down(VK_LSHIFT))
@@ -702,6 +728,8 @@ void EditorComponent::Update()
 					savedParents.insert(pair<Transform*, Transform*>(picked->transform, picked->transform->parent));
 				}
 			}
+
+			SAFE_DELETE(history);
 
 			objectWnd->SetObject(picked->object);
 
@@ -756,44 +784,87 @@ void EditorComponent::Update()
 		// Delete
 		if (wiInputManager::GetInstance()->press(VK_DELETE))
 		{
+			history = new wiArchive(AdvanceHistory(), false);
+			*history << __editorVersion;
+			*history << HISTORYOP_DELETE;
+			*history << selected.size();
 			for (auto& x : selected)
 			{
 				if (x->object != nullptr)
 				{
+					*history << true;
+					x->object->Serialize(*history);
+					x->object->mesh->Serialize(*history);
+					*history << x->object->mesh->subsets.size();
+					for (auto& y : x->object->mesh->subsets)
+					{
+						y.material->Serialize(*history);
+					}
+
 					wiRenderer::Remove(x->object);
 					SAFE_DELETE(x->object);
 					x->transform = nullptr;
 				}
+				else
+				{
+					*history << false;
+				}
+
 				if (x->light != nullptr)
 				{
+					*history << true;
+					x->light->Serialize(*history);
+
 					wiRenderer::Remove(x->light);
 					SAFE_DELETE(x->light);
 					x->transform = nullptr;
 				}
+				else
+				{
+					*history << false;
+				}
+
 				if (x->decal != nullptr)
 				{
+					*history << true;
+					x->decal->Serialize(*history);
+
 					wiRenderer::Remove(x->decal);
 					SAFE_DELETE(x->decal);
 					x->transform = nullptr;
 				}
+				else
+				{
+					*history << false;
+				}
+
 				if (x->transform != nullptr)
 				{
+					*history << true;
+
 					EnvironmentProbe* envProbe = dynamic_cast<EnvironmentProbe*>(x->transform);
 					if (envProbe != nullptr)
 					{
 						wiRenderer::Remove(envProbe);
+						SAFE_DELETE(envProbe);
 					}
 				}
+				else
+				{
+					*history << false;
+				}
 			}
+			SAFE_DELETE(history);
 			ClearSelected();
 		}
-		// Copy/Paste...
+		// Control operations...
 		if (wiInputManager::GetInstance()->down(VK_CONTROL))
 		{
 			// Copy
 			if (wiInputManager::GetInstance()->press('C'))
 			{
-				clipboard_write = new wiArchive("__temp", false);
+				clipboard_write = new wiArchive("temp/clipboard", false);
+				*clipboard_write << __editorVersion;
 				*clipboard_write << CLIPBOARD_MODEL;
 				Model* model = new Model;
 				for (auto& x : selected)
@@ -815,7 +886,10 @@ void EditorComponent::Update()
 			// Paste
 			if (wiInputManager::GetInstance()->press('V'))
 			{
-				clipboard_read = new wiArchive("__temp", true);
+				clipboard_read = new wiArchive("temp/clipboard", true);
+				int version;
+				// version check is maybe not yet used, but is here intentionally for future bacwards-compatibility!
+				*clipboard_read >> version;
 				int tmp;
 				*clipboard_read >> tmp;
 				ClipboardItemType type = (ClipboardItemType)tmp;
@@ -835,11 +909,31 @@ void EditorComponent::Update()
 				}
 				SAFE_DELETE(clipboard_read);
 			}
+			// Undo
+			if (wiInputManager::GetInstance()->press('Z'))
+			{
+				ConsumeHistoryOperation(true);
+			}
+			// Redo
+			if (wiInputManager::GetInstance()->press('Y'))
+			{
+				ConsumeHistoryOperation(false);
+			}
 		}
 
 	}
 
 	translator->Update();
+
+	if (translator->IsDragEnded())
+	{
+		history = new wiArchive(AdvanceHistory(), false);
+		*history << __editorVersion;
+		*history << HISTORYOP_TRANSLATOR;
+		*history << translator->GetDragStart();
+		*history << translator->GetDragEnd();
+		SAFE_DELETE(history);
+	}
 
 	__super::Update();
 }
@@ -964,4 +1058,146 @@ void EditorComponent::Unload()
 	SAFE_DELETE(translator);
 
 	__super::Unload();
+}
+
+
+void ResetHistory()
+{
+	historyCount = 0;
+	historyPos = -1; 
+	CreateDirectory(L"temp", NULL);
+}
+string AdvanceHistory()
+{
+	historyPos++;
+	historyCount = historyPos + 1; 
+	stringstream ss("");
+	ss << "temp/history" << historyPos;
+	return ss.str();
+}
+void ConsumeHistoryOperation(bool undo)
+{
+	if ((undo && historyPos >= 0) || (!undo && historyPos < historyCount - 1))
+	{
+		if (!undo)
+		{
+			historyPos++;
+		}
+
+		stringstream ss("");
+		ss << "temp/history" << historyPos;
+		history = new wiArchive(ss.str(), true);
+		int version;
+		*history >> version;
+		int temp;
+		*history >> temp;
+		HistoryOperationType type = (HistoryOperationType)temp;
+
+		switch (type)
+		{
+		case HISTORYOP_SELECTION:
+			{
+
+			}
+			break;
+		case HISTORYOP_TRANSLATOR:
+			{
+				XMFLOAT4X4 start, end;
+				*history >> start >> end;
+				translator->enabled = true;
+				translator->Clear();
+				if (undo)
+				{
+					translator->transform(XMLoadFloat4x4(&start));
+				}
+				else
+				{
+					translator->transform(XMLoadFloat4x4(&end));
+				}
+			}
+			break;
+		case HISTORYOP_DELETE:
+			{
+				Model* model = nullptr;
+				if (undo)
+				{
+					model = new Model;
+				}
+
+				size_t count;
+				*history >> count;
+				for (size_t i = 0; i < count; ++i)
+				{
+					bool tmp;
+
+					// object
+					*history >> tmp;
+					if (tmp)
+					{
+						if (undo)
+						{
+							Object* object = new Object;
+							object->Serialize(*history);
+							object->mesh = new Mesh;
+							object->mesh->Serialize(*history);
+							size_t subsetCount;
+							*history >> subsetCount;
+							for (size_t i = 0; i < subsetCount; ++i)
+							{
+								object->mesh->subsets[i].material = new Material;
+								object->mesh->subsets[i].material->Serialize(*history);
+							}
+							object->mesh->CreateVertexArrays();
+							object->mesh->CreateBuffers(object);
+							model->Add(object);
+						}
+					}
+
+					// light
+					*history >> tmp;
+					if (tmp)
+					{
+						Light* light = new Light;
+						light->Serialize(*history);
+						model->Add(light);
+					}
+
+					// decal
+					*history >> tmp;
+					if (tmp)
+					{
+						Decal* decal = new Decal;
+						decal->Serialize(*history);
+						model->Add(decal);
+					}
+
+					// other
+					*history >> tmp;
+					if (tmp)
+					{
+
+					}
+				}
+
+				if (undo)
+				{
+					wiRenderer::AddModel(model);
+				}
+			}
+			break;
+		case HISTORYOP_PASTE:
+			break;
+		case HISTORYOP_NONE:
+			break;
+		default:
+			break;
+		}
+
+		if (undo)
+		{
+			historyPos--;
+		}
+
+		SAFE_DELETE(history);
+	}
 }
