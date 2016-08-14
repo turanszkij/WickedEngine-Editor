@@ -6,6 +6,7 @@ class wiWindow;
 class wiLabel;
 class wiCheckBox;
 class wiSlider;
+class wiButton;
 
 struct Light;
 
@@ -26,5 +27,6 @@ public:
 	wiSlider*	distanceSlider;
 	wiSlider*	fovSlider;
 	wiCheckBox*	shadowCheckBox;
+	wiButton*	addLightButton;
 };
 

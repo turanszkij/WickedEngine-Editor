@@ -83,14 +83,6 @@ void Editor::Initialize()
 
 }
 
-void SplitFilename(const string& path, string& folder, string& file)
-{
-	size_t found;
-	found = path.find_last_of("/\\");
-	folder = path.substr(0, found + 1);
-	file = path.substr(found + 1);
-}
-
 void EditorLoadingScreen::Load()
 {
 	sprite = wiSprite();
@@ -474,7 +466,7 @@ void EditorComponent::Load()
 			if (GetOpenFileNameA(&ofn) == TRUE) {
 				string fileName = ofn.lpstrFile;
 				string dir, file;
-				SplitFilename(fileName, dir, file);
+				wiHelper::SplitPath(fileName, dir, file);
 
 				if (fileName.substr(fileName.length() - 5).compare(".wimf") == 0)
 				{
@@ -656,8 +648,7 @@ void EditorComponent::Update()
 			if (wiInputManager::GetInstance()->down('S')) cam->Move(XMVectorSet(0, 0, -speed, 0));
 			if (wiInputManager::GetInstance()->down(VK_SPACE)) cam->Move(XMVectorSet(0, speed, 0, 0));
 			if (wiInputManager::GetInstance()->down(VK_CONTROL)) cam->Move(XMVectorSet(0, -speed, 0, 0));
-			cam->RotateRollPitchYaw(XMFLOAT3(0, xDif, 0));
-			cam->RotateRollPitchYaw(XMFLOAT3(yDif, 0, 0));
+			cam->RotateRollPitchYaw(XMFLOAT3(yDif, xDif, 0));
 		}
 		else
 		{
@@ -668,19 +659,18 @@ void EditorComponent::Update()
 			}
 			if (wiInputManager::GetInstance()->down(VK_LSHIFT))
 			{
-				XMVECTOR V = XMVectorAdd(cam->GetRight() * xDif, cam->GetUp() * yDif) * 6;
+				XMVECTOR V = XMVectorAdd(cam->GetRight() * xDif, cam->GetUp() * yDif) * 10;
 				XMFLOAT3 vec;
 				XMStoreFloat3(&vec, V);
 				cameraWnd->orbitalCamTarget->Translate(vec);
 			}
 			else if (wiInputManager::GetInstance()->down(VK_LCONTROL))
 			{
-				cam->Translate(XMFLOAT3(0, 0, -yDif * 2));
+				cam->Translate(XMFLOAT3(0, 0, yDif * 4));
 			}
 			else
 			{
-				cameraWnd->orbitalCamTarget->RotateRollPitchYaw(XMFLOAT3(0, xDif, 0));
-				cameraWnd->orbitalCamTarget->RotateRollPitchYaw(XMFLOAT3(yDif, 0, 0));
+				cameraWnd->orbitalCamTarget->RotateRollPitchYaw(XMFLOAT3(yDif*2, xDif*2, 0));
 			}
 		}
 
@@ -708,11 +698,17 @@ void EditorComponent::Update()
 				}
 				if (it==selected.end() && picked->transform != nullptr)
 				{
+					*history << (int)0; // add sel
+					*history << picked->transform->GetID();
+
 					selected.push_back(picked);
 					savedParents.insert(pair<Transform*, Transform*>(picked->transform, picked->transform->parent));
 				}
 				else
 				{
+					*history << (int)1; // remove from sel
+					*history << (*it)->transform->GetID();
+
 					EndTranslate();
 					selected.erase(it);
 					savedParents.erase((*it)->transform);
@@ -720,6 +716,8 @@ void EditorComponent::Update()
 			}
 			else
 			{
+				*history << (int)2; // clear sel, new sel
+
 				EndTranslate();
 				ClearSelected();
 				selected.push_back(picked);
@@ -841,6 +839,7 @@ void EditorComponent::Update()
 				if (x->transform != nullptr)
 				{
 					*history << true;
+					*history << x->transform->GetID();
 
 					EnvironmentProbe* envProbe = dynamic_cast<EnvironmentProbe*>(x->transform);
 					if (envProbe != nullptr)
@@ -1097,7 +1096,51 @@ void ConsumeHistoryOperation(bool undo)
 		{
 		case HISTORYOP_SELECTION:
 			{
-
+				int selOpType;
+				*history >> selOpType;
+				switch (selOpType)
+				{
+					case 0: // add sel
+					{
+						unsigned long long selID;
+						*history >> selID;
+						if (undo)
+						{
+							for (auto& x : selected)
+							{
+								if (x->transform->GetID() == selID)
+								{
+									selected.remove(x);
+									break;
+								}
+							}
+						}
+						else
+						{
+							wiRenderer::Picked* p = new wiRenderer::Picked;
+							p->transform = wiRenderer::GetScene().GetWorldNode()->find(selID);
+							if (p->transform != nullptr)
+							{
+								selected.push_back(p);
+							}
+						}
+					}
+					break;
+				case 1: // remove from sel
+					{
+						unsigned long long selID;
+						*history >> selID;
+					}
+					break;
+				case 2: // clear sel, new sel
+					{
+						unsigned long long selID;
+						*history >> selID;
+					}
+					break;
+				default:
+					break;
+				}
 			}
 			break;
 		case HISTORYOP_TRANSLATOR:
@@ -1173,6 +1216,8 @@ void ConsumeHistoryOperation(bool undo)
 
 					// other
 					*history >> tmp;
+					unsigned long long id;
+					*history >> id;
 					if (tmp)
 					{
 

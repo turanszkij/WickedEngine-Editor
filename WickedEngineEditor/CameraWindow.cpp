@@ -14,7 +14,7 @@ CameraWindow::CameraWindow(wiGUI* gui) :GUI(gui)
 	float screenW = (float)wiRenderer::GetDevice()->GetScreenWidth();
 	float screenH = (float)wiRenderer::GetDevice()->GetScreenHeight();
 
-	fpscamera = false;
+	fpscamera = true;
 	orbitalCamTarget = new Transform;
 
 	cameraWindow = new wiWindow(GUI, "Camera Window");
@@ -66,6 +66,7 @@ CameraWindow::CameraWindow(wiGUI* gui) :GUI(gui)
 	fpsCheckBox->OnClick([&](wiEventArgs args) {
 		fpscamera = args.bValue;
 	});
+	fpsCheckBox->SetCheck(fpscamera);
 	cameraWindow->AddWidget(fpsCheckBox);
 
 

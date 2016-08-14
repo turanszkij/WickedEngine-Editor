@@ -11,7 +11,7 @@ LightWindow::LightWindow(wiGUI* gui) : GUI(gui)
 
 	lightWindow = new wiWindow(GUI, "Light Window");
 	lightWindow->SetSize(XMFLOAT2(400, 300));
-	lightWindow->SetEnabled(false);
+	//lightWindow->SetEnabled(false);
 	GUI->AddWidget(lightWindow);
 
 	float x = 200;
@@ -26,6 +26,7 @@ LightWindow::LightWindow(wiGUI* gui) : GUI(gui)
 			light->enerDis.x = args.fValue;
 		}
 	});
+	energySlider->SetEnabled(false);
 	lightWindow->AddWidget(energySlider);
 
 	distanceSlider = new wiSlider(1, 1000, 0, 100000, "Distance: ");
@@ -37,6 +38,7 @@ LightWindow::LightWindow(wiGUI* gui) : GUI(gui)
 			light->enerDis.y = args.fValue;
 		}
 	});
+	distanceSlider->SetEnabled(false);
 	lightWindow->AddWidget(distanceSlider);
 
 	fovSlider = new wiSlider(0.1f, 0.9f, 0, 100000, "FOV: ");
@@ -48,6 +50,7 @@ LightWindow::LightWindow(wiGUI* gui) : GUI(gui)
 			light->enerDis.z = args.fValue;
 		}
 	});
+	fovSlider->SetEnabled(false);
 	lightWindow->AddWidget(fovSlider);
 
 	shadowCheckBox = new wiCheckBox("Shadow: ");
@@ -58,8 +61,22 @@ LightWindow::LightWindow(wiGUI* gui) : GUI(gui)
 			light->shadow = args.bValue;
 		}
 	});
+	shadowCheckBox->SetEnabled(false);
 	lightWindow->AddWidget(shadowCheckBox);
 
+	addLightButton = new wiButton("Add Light");
+	addLightButton->SetPos(XMFLOAT2(x, y += 30));
+	addLightButton->SetSize(XMFLOAT2(180, 30));
+	addLightButton->OnClick([&](wiEventArgs args) {
+		Model* model = new Model;
+		Light* light = new Light;
+		light->enerDis = XMFLOAT4(2, 60, XM_PIDIV4, 0);
+		light->color = XMFLOAT4(1, 1, 1, 1);
+		light->type = Light::SPOT;
+		model->lights.push_back(light);
+		wiRenderer::AddModel(model);
+	});
+	lightWindow->AddWidget(addLightButton);
 
 
 	lightWindow->Translate(XMFLOAT3(30, 30, 0));
@@ -74,6 +91,7 @@ LightWindow::~LightWindow()
 	SAFE_DELETE(distanceSlider);
 	SAFE_DELETE(fovSlider);
 	SAFE_DELETE(shadowCheckBox);
+	SAFE_DELETE(addLightButton);
 }
 
 void LightWindow::SetLight(Light* light)
@@ -81,7 +99,8 @@ void LightWindow::SetLight(Light* light)
 	this->light = light;
 	if (light != nullptr)
 	{
-		lightWindow->SetEnabled(true);
+		//lightWindow->SetEnabled(true);
+		energySlider->SetEnabled(true);
 		energySlider->SetValue(light->enerDis.x);
 		if (light->type == Light::DIRECTIONAL)
 		{
@@ -106,6 +125,9 @@ void LightWindow::SetLight(Light* light)
 	}
 	else
 	{
-		lightWindow->SetEnabled(false);
+		distanceSlider->SetEnabled(false);
+		fovSlider->SetEnabled(false);
+		energySlider->SetEnabled(false);
+		//lightWindow->SetEnabled(false);
 	}
 }

@@ -28,7 +28,7 @@ EnvProbeWindow::EnvProbeWindow(wiGUI* gui) : GUI(gui)
 	generateButton->SetPos(XMFLOAT2(x, y += step));
 	generateButton->OnClick([](wiEventArgs args) {
 		XMFLOAT3 pos;
-		XMStoreFloat3(&pos, XMVectorAdd(wiRenderer::getCamera()->GetEye(), wiRenderer::getCamera()->GetAt()));
+		XMStoreFloat3(&pos, XMVectorAdd(wiRenderer::getCamera()->GetEye(), wiRenderer::getCamera()->GetAt()*4));
 		wiRenderer::PutEnvProbe(pos, resolution);
 	});
 	envProbeWindow->AddWidget(generateButton);
