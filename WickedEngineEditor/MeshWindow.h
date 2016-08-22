@@ -6,6 +6,7 @@ class wiWindow;
 class wiLabel;
 class wiCheckBox;
 class wiSlider;
+class wiButton;
 
 struct Mesh;
 
@@ -25,5 +26,7 @@ public:
 	wiCheckBox* doubleSidedCheckBox;
 	wiSlider*	massSlider;
 	wiSlider*	frictionSlider;
+	wiButton*	impostorCreateButton;
+	wiSlider*	impostorDistanceSlider;
 };
 

@@ -50,6 +50,28 @@ MeshWindow::MeshWindow(wiGUI* gui) : GUI(gui)
 	});
 	meshWindow->AddWidget(frictionSlider);
 
+	impostorCreateButton = new wiButton("Create Impostor");
+	impostorCreateButton->SetSize(XMFLOAT2(240, 30));
+	impostorCreateButton->SetPos(XMFLOAT2(x - 50, y += 30));
+	impostorCreateButton->OnClick([&](wiEventArgs args) {
+		if (mesh != nullptr)
+		{
+			wiRenderer::CreateImpostor(mesh);
+		}
+	});
+	meshWindow->AddWidget(impostorCreateButton);
+
+	impostorDistanceSlider = new wiSlider(0, 1000, 100, 10000, "Impostor Distance: ");
+	impostorDistanceSlider->SetSize(XMFLOAT2(100, 30));
+	impostorDistanceSlider->SetPos(XMFLOAT2(x, y += 30));
+	impostorDistanceSlider->OnSlide([&](wiEventArgs args) {
+		if (mesh != nullptr)
+		{
+			mesh->impostorDistance = args.fValue;
+		}
+	});
+	meshWindow->AddWidget(impostorDistanceSlider);
+
 
 
 
@@ -64,6 +86,8 @@ MeshWindow::~MeshWindow()
 	SAFE_DELETE(doubleSidedCheckBox);
 	SAFE_DELETE(massSlider);
 	SAFE_DELETE(frictionSlider);
+	SAFE_DELETE(impostorCreateButton);
+	SAFE_DELETE(impostorDistanceSlider);
 }
 
 void MeshWindow::SetMesh(Mesh* mesh)
@@ -74,6 +98,7 @@ void MeshWindow::SetMesh(Mesh* mesh)
 		doubleSidedCheckBox->SetCheck(mesh->doubleSided);
 		massSlider->SetValue(mesh->mass);
 		frictionSlider->SetValue(mesh->friction);
+		impostorDistanceSlider->SetValue(mesh->impostorDistance);
 		meshWindow->SetEnabled(true);
 	}
 	else
