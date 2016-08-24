@@ -41,7 +41,7 @@ LightWindow::LightWindow(wiGUI* gui) : GUI(gui)
 	distanceSlider->SetEnabled(false);
 	lightWindow->AddWidget(distanceSlider);
 
-	fovSlider = new wiSlider(0.1f, 0.9f, 0, 100000, "FOV: ");
+	fovSlider = new wiSlider(0.1f, XM_PI - 0.01f, 0, 100000, "FOV: ");
 	fovSlider->SetSize(XMFLOAT2(100, 30));
 	fovSlider->SetPos(XMFLOAT2(x, y += 30));
 	fovSlider->OnSlide([&](wiEventArgs args) {
@@ -63,6 +63,17 @@ LightWindow::LightWindow(wiGUI* gui) : GUI(gui)
 	});
 	shadowCheckBox->SetEnabled(false);
 	lightWindow->AddWidget(shadowCheckBox);
+
+	haloCheckBox = new wiCheckBox("Halo: ");
+	haloCheckBox->SetPos(XMFLOAT2(x, y += 30));
+	haloCheckBox->OnClick([&](wiEventArgs args) {
+		if (light != nullptr)
+		{
+			light->noHalo = !args.bValue;
+		}
+	});
+	haloCheckBox->SetEnabled(false);
+	lightWindow->AddWidget(haloCheckBox);
 
 	addLightButton = new wiButton("Add Light");
 	addLightButton->SetPos(XMFLOAT2(x, y += 30));
@@ -91,6 +102,7 @@ LightWindow::~LightWindow()
 	SAFE_DELETE(distanceSlider);
 	SAFE_DELETE(fovSlider);
 	SAFE_DELETE(shadowCheckBox);
+	SAFE_DELETE(haloCheckBox);
 	SAFE_DELETE(addLightButton);
 }
 
@@ -122,6 +134,7 @@ void LightWindow::SetLight(Light* light)
 			}
 		}
 		shadowCheckBox->SetCheck(light->shadow);
+		haloCheckBox->SetCheck(!light->noHalo);
 	}
 	else
 	{

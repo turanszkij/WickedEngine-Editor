@@ -27,6 +27,7 @@ public:
 	wiSlider*	distanceSlider;
 	wiSlider*	fovSlider;
 	wiCheckBox*	shadowCheckBox;
+	wiCheckBox*	haloCheckBox;
 	wiButton*	addLightButton;
 };
 
