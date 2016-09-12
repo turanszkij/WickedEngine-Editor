@@ -1,10 +1,13 @@
 #include "stdafx.h"
 #include "RendererWindow.h"
+#include "Renderable3DComponent.h"
 
 
-RendererWindow::RendererWindow(wiGUI* gui) : GUI(gui)
+RendererWindow::RendererWindow(Renderable3DComponent* component)
 {
 	assert(GUI && "Invalid GUI!");
+
+	GUI = &component->GetGUI();
 
 	float screenW = (float)wiRenderer::GetDevice()->GetScreenWidth();
 	float screenH = (float)wiRenderer::GetDevice()->GetScreenHeight();
@@ -42,6 +45,23 @@ RendererWindow::RendererWindow(wiGUI* gui) : GUI(gui)
 	});
 	boneLinesCheckBox->SetCheck(wiRenderer::GetToDrawDebugBoneLines());
 	rendererWindow->AddWidget(boneLinesCheckBox);
+
+	wireFrameCheckBox = new wiCheckBox("Render Wireframe: ");
+	wireFrameCheckBox->SetPos(XMFLOAT2(x, y += step));
+	wireFrameCheckBox->OnClick([](wiEventArgs args) {
+		wiRenderer::SetWireRender(args.bValue);
+	});
+	wireFrameCheckBox->SetCheck(wiRenderer::IsWireRender());
+	rendererWindow->AddWidget(wireFrameCheckBox);
+
+	tessellationCheckBox = new wiCheckBox("Tessellation Enabled: ");
+	tessellationCheckBox->SetPos(XMFLOAT2(x, y += step));
+	tessellationCheckBox->OnClick([=](wiEventArgs args) {
+		component->setTessellationEnabled(args.bValue);
+	});
+	tessellationCheckBox->SetCheck(wiRenderer::GetToDrawDebugBoneLines());
+	tessellationCheckBox->SetEnabled(wiRenderer::GetDevice()->CheckCapability(wiGraphicsTypes::GraphicsDevice::GRAPHICSDEVICE_CAPABILITY_TESSELLATION));
+	rendererWindow->AddWidget(tessellationCheckBox);
 
 	envProbesCheckBox = new wiCheckBox("Env probe visualizer: ");
 	envProbesCheckBox->SetPos(XMFLOAT2(x, y += step));
@@ -101,6 +121,8 @@ RendererWindow::~RendererWindow()
 	SAFE_DELETE(vsyncCheckBox);
 	SAFE_DELETE(partitionBoxesCheckBox);
 	SAFE_DELETE(boneLinesCheckBox);
+	SAFE_DELETE(wireFrameCheckBox);
+	SAFE_DELETE(tessellationCheckBox);
 	SAFE_DELETE(envProbesCheckBox);
 	SAFE_DELETE(gridHelperCheckBox);
 	SAFE_DELETE(pickTypeObjectCheckBox);

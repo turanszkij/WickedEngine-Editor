@@ -231,7 +231,7 @@ void EditorComponent::Load()
 	objectWnd = new ObjectWindow(&GetGUI());
 	meshWnd = new MeshWindow(&GetGUI());
 	cameraWnd = new CameraWindow(&GetGUI());
-	rendererWnd = new RendererWindow(&GetGUI());
+	rendererWnd = new RendererWindow(this);
 	envProbeWnd = new EnvProbeWindow(&GetGUI());
 	decalWnd = new DecalWindow(&GetGUI());
 	lightWnd = new LightWindow(&GetGUI());

@@ -28,5 +28,6 @@ public:
 	wiSlider*	frictionSlider;
 	wiButton*	impostorCreateButton;
 	wiSlider*	impostorDistanceSlider;
+	wiSlider*	tessellationFactorSlider;
 };
 

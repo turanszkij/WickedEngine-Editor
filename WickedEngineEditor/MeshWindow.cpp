@@ -72,6 +72,17 @@ MeshWindow::MeshWindow(wiGUI* gui) : GUI(gui)
 	});
 	meshWindow->AddWidget(impostorDistanceSlider);
 
+	tessellationFactorSlider = new wiSlider(0, 16, 0, 10000, "Tessellation Factor: ");
+	tessellationFactorSlider->SetSize(XMFLOAT2(100, 30));
+	tessellationFactorSlider->SetPos(XMFLOAT2(x, y += 30));
+	tessellationFactorSlider->OnSlide([&](wiEventArgs args) {
+		if (mesh != nullptr)
+		{
+			mesh->tessellationFactor = args.fValue;
+		}
+	});
+	meshWindow->AddWidget(tessellationFactorSlider);
+
 
 
 
@@ -88,6 +99,7 @@ MeshWindow::~MeshWindow()
 	SAFE_DELETE(frictionSlider);
 	SAFE_DELETE(impostorCreateButton);
 	SAFE_DELETE(impostorDistanceSlider);
+	SAFE_DELETE(tessellationFactorSlider);
 }
 
 void MeshWindow::SetMesh(Mesh* mesh)
@@ -99,6 +111,7 @@ void MeshWindow::SetMesh(Mesh* mesh)
 		massSlider->SetValue(mesh->mass);
 		frictionSlider->SetValue(mesh->friction);
 		impostorDistanceSlider->SetValue(mesh->impostorDistance);
+		tessellationFactorSlider->SetValue(mesh->getTessellationFactor());
 		meshWindow->SetEnabled(true);
 	}
 	else

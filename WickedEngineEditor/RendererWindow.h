@@ -10,7 +10,7 @@ class wiSlider;
 class RendererWindow
 {
 public:
-	RendererWindow(wiGUI* gui);
+	RendererWindow(Renderable3DComponent* component);
 	~RendererWindow();
 
 	wiGUI* GUI;
@@ -19,6 +19,8 @@ public:
 	wiCheckBox* vsyncCheckBox;
 	wiCheckBox* partitionBoxesCheckBox;
 	wiCheckBox* boneLinesCheckBox;
+	wiCheckBox* wireFrameCheckBox;
+	wiCheckBox* tessellationCheckBox;
 	wiCheckBox* envProbesCheckBox;
 	wiCheckBox* gridHelperCheckBox;
 	wiCheckBox* pickTypeObjectCheckBox;
