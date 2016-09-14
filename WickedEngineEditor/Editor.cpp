@@ -605,6 +605,8 @@ void EditorComponent::Load()
 	});
 	GetGUI().AddWidget(exitButton);
 
+
+
 	
 
 	pointLightTex = *(Texture2D*)Content.add("Resource/pointlight.dds");

@@ -111,7 +111,21 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 	materialWindow->AddWidget(pomSlider);
 
 
+	colorPickerToggleButton = new wiButton("Color");
+	colorPickerToggleButton->SetPos(XMFLOAT2(x, y += 30));
+	colorPickerToggleButton->OnClick([&](wiEventArgs args) {
+		colorPicker->SetVisible(!colorPicker->IsVisible());
+	});
+	materialWindow->AddWidget(colorPickerToggleButton);
 
+
+	colorPicker = new wiColorPicker(GUI, "Material Color");
+	colorPicker->SetVisible(false);
+	colorPicker->SetEnabled(false);
+	colorPicker->OnColorChanged([&](wiEventArgs args) {
+		material->baseColor = XMFLOAT3(args.color.x, args.color.y, args.color.z);
+	});
+	GUI->AddWidget(colorPicker);
 
 
 	materialWindow->Translate(XMFLOAT3(30, 30, 0));
@@ -134,6 +148,8 @@ MaterialWindow::~MaterialWindow()
 	SAFE_DELETE(emissiveSlider);
 	SAFE_DELETE(sssSlider);
 	SAFE_DELETE(pomSlider);
+	SAFE_DELETE(colorPickerToggleButton);
+	SAFE_DELETE(colorPicker);
 }
 
 
@@ -156,10 +172,12 @@ void MaterialWindow::SetMaterial(Material* mat)
 		sssSlider->SetValue(material->subsurfaceScattering);
 		pomSlider->SetValue(material->parallaxOcclusionMapping);
 		materialWindow->SetEnabled(true);
+		colorPicker->SetEnabled(true);
 	}
 	else
 	{
 		materialLabel->SetText("No material selected");
 		materialWindow->SetEnabled(false);
+		colorPicker->SetEnabled(false);
 	}
 }

@@ -6,6 +6,8 @@ class wiWindow;
 class wiLabel;
 class wiCheckBox;
 class wiSlider;
+class wiColorPicker;
+class wiButton;
 
 class MaterialWindow
 {
@@ -32,5 +34,7 @@ public:
 	wiSlider*	emissiveSlider;
 	wiSlider*	sssSlider;
 	wiSlider*	pomSlider;
+	wiButton*	colorPickerToggleButton;
+	wiColorPicker* colorPicker;
 };
 
