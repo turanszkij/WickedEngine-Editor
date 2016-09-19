@@ -643,13 +643,17 @@ void EditorComponent::Update()
 		{
 			// FPS Camera
 			cam->detach();
-			float speed = (wiInputManager::GetInstance()->down(VK_SHIFT) ? 1.0f : 0.1f);
-			if (wiInputManager::GetInstance()->down('A')) cam->Move(XMVectorSet(-speed, 0, 0, 0));
-			if (wiInputManager::GetInstance()->down('D')) cam->Move(XMVectorSet(speed, 0, 0, 0));
-			if (wiInputManager::GetInstance()->down('W')) cam->Move(XMVectorSet(0, 0, speed, 0));
-			if (wiInputManager::GetInstance()->down('S')) cam->Move(XMVectorSet(0, 0, -speed, 0));
-			if (wiInputManager::GetInstance()->down(VK_SPACE)) cam->Move(XMVectorSet(0, speed, 0, 0));
-			if (wiInputManager::GetInstance()->down(VK_CONTROL)) cam->Move(XMVectorSet(0, -speed, 0, 0));
+			if (!wiInputManager::GetInstance()->down(VK_CONTROL))
+			{
+				// Only move camera if control not pressed
+				float speed = (wiInputManager::GetInstance()->down(VK_SHIFT) ? 1.0f : 0.1f);
+				if (wiInputManager::GetInstance()->down('A')) cam->Move(XMVectorSet(-speed, 0, 0, 0));
+				if (wiInputManager::GetInstance()->down('D')) cam->Move(XMVectorSet(speed, 0, 0, 0));
+				if (wiInputManager::GetInstance()->down('W')) cam->Move(XMVectorSet(0, 0, speed, 0));
+				if (wiInputManager::GetInstance()->down('S')) cam->Move(XMVectorSet(0, 0, -speed, 0));
+				if (wiInputManager::GetInstance()->down('E')) cam->Move(XMVectorSet(0, speed, 0, 0));
+				if (wiInputManager::GetInstance()->down('Q')) cam->Move(XMVectorSet(0, -speed, 0, 0));
+			}
 			cam->RotateRollPitchYaw(XMFLOAT3(yDif, xDif, 0));
 		}
 		else
@@ -909,6 +913,25 @@ void EditorComponent::Update()
 					break;
 				}
 				SAFE_DELETE(clipboard_read);
+			}
+			// Duplicate Instances
+			if (wiInputManager::GetInstance()->press('D'))
+			{
+				for (auto& x : selected)
+				{
+					if (x->object != nullptr)
+					{
+						Object* o = new Object(*x->object);
+						o->detach();
+						wiRenderer::Add(o);
+					}
+					if (x->light != nullptr)
+					{
+						Light* l = new Light(*x->light);
+						l->detach();
+						wiRenderer::Add(l);
+					}
+				}
 			}
 			// Undo
 			if (wiInputManager::GetInstance()->press('Z'))
