@@ -61,6 +61,7 @@ void Editor::Initialize()
 	wiRenderer::SetPointLightShadowProps(3, 512);
 	wiRenderer::SetSpotLightShadowProps(3, 512);
 	wiRenderer::physicsEngine = new wiBULLET();
+	wiHairParticle::Settings(400, 1000, 2000);
 
 
 	wiFont::addFontStyle("basic");
@@ -1066,6 +1067,7 @@ void EditorComponent::Compose()
 			}
 		}
 	}
+
 }
 void EditorComponent::Unload()
 {

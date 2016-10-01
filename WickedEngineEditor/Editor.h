@@ -23,7 +23,10 @@ public:
 };
 
 class Editor;
-class EditorComponent : public DeferredRenderableComponent
+class EditorComponent 
+	: public DeferredRenderableComponent
+	//: public ForwardRenderableComponent
+	//: public TiledForwardRenderableComponent
 {
 private:
 	wiGraphicsTypes::Texture2D pointLightTex, spotLightTex, dirLightTex;

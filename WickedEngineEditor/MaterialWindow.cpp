@@ -123,7 +123,7 @@ MaterialWindow::MaterialWindow(wiGUI* gui) : GUI(gui)
 	colorPicker->SetVisible(false);
 	colorPicker->SetEnabled(false);
 	colorPicker->OnColorChanged([&](wiEventArgs args) {
-		material->baseColor = XMFLOAT3(args.color.x, args.color.y, args.color.z);
+		material->baseColor = XMFLOAT3(powf(args.color.x, 1.f / 2.2f), powf(args.color.y, 1.f / 2.2f), powf(args.color.z, 1.f / 2.2f));
 	});
 	GUI->AddWidget(colorPicker);
 
